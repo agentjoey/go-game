@@ -1,5 +1,5 @@
 /**
- * 围棋游戏逻辑 - 简化版 MVP
+ * 围棋游戏 - 简化版
  */
 
 const EMPTY = 0;
@@ -16,16 +16,16 @@ class GoGame {
         this.moves = [];
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
-        this.aiEnabled = false;
-        this.aiDifficulty = 'medium';
-        this.lastKo = null;
         
-        // 初始化棋盘
+        // 创建棋盘
         this.boardView = new GoBoard('board', BOARD_SIZE);
-        this.boardView.addClickListener((row, col) => this.handleClick(row, col));
+        this.boardView.addClickListener((row, col) => {
+            console.log('Game received click:', row, col);
+            this.handleMove(row, col);
+        });
         
         this.updateUI();
-        console.log('GoGame initialized');
+        console.log('GoGame ready!');
     }
     
     createEmptyBoard() {
@@ -36,27 +36,25 @@ class GoGame {
         return b;
     }
     
-    handleClick(row, col) {
+    handleMove(row, col) {
         if (this.gameOver) {
-            this.showToast('游戏已结束');
+            this.toast('游戏已结束');
             return;
         }
         this.makeMove(row, col);
     }
     
     makeMove(row, col) {
-        console.log('makeMove:', row, col, 'player:', this.currentPlayer);
+        console.log('makeMove:', row, col, 'player:', this.currentPlayer === BLACK ? '黑' : '白');
         
-        // 检查空位
-        if (this.board[row][col] !== EMPTY) {
-            this.showToast('该位置已有棋子');
-            return false;
+        // 验证
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+            return;
         }
         
-        // 检查打劫
-        if (this.lastKo && this.lastKo[0] === row && this.lastKo[1] === col) {
-            this.showToast('打劫禁着');
-            return false;
+        if (this.board[row][col] !== EMPTY) {
+            this.toast('已有棋子');
+            return;
         }
         
         // 落子
@@ -75,25 +73,17 @@ class GoGame {
             this.captures[WHITE] += captured.length;
         }
         
-        // 记录棋谱
+        // 记录
         const coord = this.boardView.coordToString(row, col);
-        this.moves.push({
-            player: this.currentPlayer,
-            row: row,
-            col: col,
-            coord: coord,
-            captured: captured
-        });
+        this.moves.push({ player: this.currentPlayer, row, col, coord });
         
         // 更新视图
         this.boardView.setBoard(this.board);
         this.boardView.setLastMove(row, col);
         
-        // 切换玩家
+        // 换人
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
         this.updateUI();
-        
-        return true;
     }
     
     checkCaptures(player) {
@@ -165,117 +155,87 @@ class GoGame {
     }
     
     pass() {
-        if (this.gameOver) return;
         this.moves.push({ player: this.currentPlayer, type: 'pass' });
+        this.toast(`${this.currentPlayer === BLACK ? '黑' : '白'} Pass`);
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
-        this.showToast(`${this.currentPlayer === BLACK ? '黑' : '白'}方 Pass`);
         this.updateUI();
     }
     
     resign() {
         this.gameOver = true;
-        const winner = this.currentPlayer === BLACK ? '白' : '黑';
-        this.showToast(`${winner}方获胜！`);
+        this.toast(`${this.currentPlayer === BLACK ? '白' : '黑'}获胜！`);
     }
     
     updateUI() {
-        // 更新当前玩家
         const stone = document.getElementById('currentStone');
         const player = document.getElementById('currentPlayer');
         if (stone) stone.textContent = this.currentPlayer === BLACK ? '⚫' : '⚪';
         if (player) player.textContent = this.currentPlayer === BLACK ? '黑方回合' : '白方回合';
         
-        // 更新提子
         const blackCap = document.getElementById('blackCaptures');
         const whiteCap = document.getElementById('whiteCaptures');
         if (blackCap) blackCap.textContent = this.captures[BLACK];
         if (whiteCap) whiteCap.textContent = this.captures[WHITE];
         
-        // 更新历史
         this.updateHistory();
     }
     
     updateHistory() {
-        const history = document.getElementById('moveHistory');
-        if (!history) return;
+        const el = document.getElementById('moveHistory');
+        if (!el) return;
         
         if (this.moves.length === 0) {
-            history.innerHTML = '<p class="text-muted small">暂无落子记录</p>';
+            el.innerHTML = '<p class="text-muted small p-2">暂无记录</p>';
             return;
         }
         
-        let html = '<div style="max-height:400px;overflow-y:auto;">';
+        let html = '<div class="list-group list-group-flush" style="max-height:400px;overflow-y:auto;">';
         this.moves.forEach((m, i) => {
-            const stone = m.player === BLACK ? '⚫' : '⚪';
-            const name = m.player === BLACK ? '黑' : '白';
+            const s = m.player === BLACK ? '⚫' : '⚪';
+            const n = m.player === BLACK ? '黑' : '白';
             if (m.type === 'pass') {
-                html += `<div class="p-2 border-bottom">${i+1}. ${stone} ${name} Pass</div>`;
+                html += `<div class="list-group-item p-2">${i+1}. ${s} ${n} Pass</div>`;
             } else {
-                html += `<div class="p-2 border-bottom d-flex justify-content-between">${i+1}. ${stone} ${name}<span class="badge bg-secondary">${m.coord}</span></div>`;
+                html += `<div class="list-group-item p-2 d-flex justify-content-between">${i+1}. ${s} ${n}<span class="badge bg-secondary">${m.coord}</span></div>`;
             }
         });
         html += '</div>';
-        history.innerHTML = html;
+        el.innerHTML = html;
     }
     
-    showToast(msg) {
-        let toast = document.createElement('div');
-        toast.className = 'toast show';
-        toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#333;color:#fff;padding:20px 40px;border-radius:10px;z-index:9999;';
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
+    toast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast show';
+        t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
     }
     
-    newGame(aiEnabled = false, difficulty = 'medium') {
+    newGame() {
         this.board = this.createEmptyBoard();
         this.currentPlayer = BLACK;
         this.moves = [];
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
-        this.aiEnabled = aiEnabled;
-        this.aiDifficulty = difficulty;
-        this.lastKo = null;
-        
         this.boardView.setBoard(this.board);
         this.boardView.clearLastMove();
         this.updateUI();
+        this.toast('新游戏开始！');
     }
 }
 
 // 全局函数
 function initGame() {
-    console.log('initGame called');
+    console.log('initGame');
     game = new GoGame();
 }
 
-function newGame() {
-    const diff = document.getElementById('aiDifficulty')?.value || 'none';
-    game.newGame(diff !== 'none', diff);
-}
+function newGame() { game && game.newGame(); }
+function passTurn() { game && game.pass(); }
+function resign() { game && game.resign(); }
 
-function passTurn() {
-    game.pass();
-}
-
-function resign() {
-    game.resign();
-}
-
-function undoMove() {
-    game.showToast('悔棋功能开发中');
-}
-
-function saveGame() {
-    game.showToast('保存功能开发中');
-}
-
-function showHint() {
-    game.showToast('提示功能开发中');
-}
-
-// 页面加载后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-    setTimeout(initGame, 100);
+    console.log('DOM ready');
+    setTimeout(initGame, 200);
 });
