@@ -123,9 +123,11 @@ function renderReplay() {
         </div>
     `;
 
-    // 初始化棋盘
+    // 初始化棋盘（复用已有实例）
     setTimeout(() => {
-        replayBoard = new GoBoard('replayBoard', 19);
+        if (!replayBoard) {
+            replayBoard = new GoBoard('replayBoard', 19);
+        }
         updateReplayBoard();
     }, 100);
 }

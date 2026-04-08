@@ -198,9 +198,12 @@ function selectPuzzle(id) {
     document.getElementById('puzzleTitle').textContent = currentPuzzle.title;
     document.getElementById('puzzleDesc').textContent = currentPuzzle.description;
 
-    puzzleBoard = new GoBoard('puzzleBoard', 9);
-    puzzleBoard.setBoard(currentPuzzle.board);
-    puzzleBoard.addClickListener(handlePuzzleClick);
+    // 复用已有的棋盘实例，只更新棋盘数据
+    if (!puzzleBoard) {
+        puzzleBoard = new GoBoard('puzzleBoard', 9);
+        puzzleBoard.addClickListener(handlePuzzleClick);
+    }
+    puzzleBoard.setBoard(JSON.parse(JSON.stringify(currentPuzzle.board)));
 
     renderPuzzleList();
 }
