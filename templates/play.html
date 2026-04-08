@@ -1,171 +1,106 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对弈 - 围棋学堂</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 导航 -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">⚪ 围棋学堂</a>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/play" class="active">对弈</a>
+                <a href="/tsumego">死活题</a>
+                <a href="/tutorial">教程</a>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}对弈模式 - Go Learning{% endblock %}
-
-{% block content %}
-<div class="play-page">
-    <!-- 对弈控制面板 -->
-    <aside class="play-sidebar">
-        <div class="panel game-info">
-            <h3>⚫ 对弈信息</h3>
-            <div class="player-info">
-                <div class="player black-player">
-                    <span class="player-stone">⚫</span>
-                    <span class="player-name">黑棋</span>
-                    <span class="player-captures">提子: <span id="black-captures">0</span></span>
+    <main class="container py-4">
+        <div class="game-layout">
+            <!-- AI 棋伴区域 -->
+            <div class="companion-panel">
+                <div class="companion-card">
+                    <div class="companion-avatar" id="ai-emoji">🐼</div>
+                    <div class="companion-info">
+                        <span class="companion-name" id="ai-name">阿呆</span>
+                        <span class="companion-status">AI 对手</span>
+                    </div>
                 </div>
-                <div class="vs">VS</div>
-                <div class="player white-player">
-                    <span class="player-stone">⚪</span>
-                    <span class="player-name">白棋</span>
-                    <span class="player-captures">提子: <span id="white-captures">0</span></span>
+                <!-- AI 气泡 -->
+                <div class="ai-bubble" id="ai-bubble"></div>
+                <!-- AI 设置 -->
+                <div class="ai-settings">
+                    <div class="setting-item">
+                        <label>棋伴性格</label>
+                        <select id="companionType" class="form-select form-select-sm">
+                            <option value="adai">🐼 阿呆 - 温和鼓励型</option>
+                            <option value="xiaozhi">🦊 小智 - 挑战型</option>
+                            <option value="youyou">🐱 悠悠 - 冷静型</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>棋盘大小</label>
+                        <select id="boardSize" class="form-select form-select-sm">
+                            <option value="19">19路 (标准)</option>
+                            <option value="13">13路</option>
+                            <option value="9">9路 (入门)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>AI 难度</label>
+                        <select id="aiDifficulty" class="form-select form-select-sm">
+                            <option value="none">人人对战</option>
+                            <option value="easy">简单</option>
+                            <option value="medium" selected>中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm w-100 mt-2" onclick="newGame()">开始新游戏</button>
                 </div>
             </div>
-            <div class="current-turn">
-                <span>当前: </span>
-                <span id="current-player" class="turn-indicator black">黑棋</span>
-            </div>
-        </div>
 
-        <div class="panel game-controls">
-            <h3>🎮 游戏控制</h3>
-            <div class="control-group">
-                <label>棋盘大小</label>
-                <div class="btn-group">
-                    <button class="btn-size" data-size="9">9路</button>
-                    <button class="btn-size active" data-size="19">19路</button>
-                    <button class="btn-size" data-size="13">13路</button>
+            <!-- 棋盘区域 -->
+            <div class="board-area">
+                <div class="board-info">
+                    <span class="current-player">
+                        <span id="currentStone" class="stone-icon">⚫</span>
+                        <span id="currentPlayer">黑方回合</span>
+                    </span>
+                    <span class="captures">
+                        黑: <span id="blackCaptures" class="capture-count">0</span>
+                        白: <span id="whiteCaptures" class="capture-count">0</span>
+                    </span>
+                </div>
+                <div class="board-wrapper">
+                    <div id="go-board" class="go-board"></div>
+                </div>
+                <div class="board-controls">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="passTurn()">Pass</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="resign()">认输</button>
                 </div>
             </div>
-            <div class="control-group">
-                <label>对弈模式</label>
-                <div class="btn-group">
-                    <button class="btn-mode active" data-mode="pvp">双人</button>
-                    <button class="btn-mode" data-mode="pve">人机</button>
+
+            <!-- 棋谱区域 -->
+            <div class="moves-panel">
+                <div class="panel-header">
+                    <h5>📖 落子记录</h5>
                 </div>
-            </div>
-            <div class="control-group">
-                <label>执子颜色</label>
-                <div class="btn-group">
-                    <button class="btn-color active" data-color="black">⚫ 黑棋</button>
-                    <button class="btn-color" data-color="white">⚪ 白棋</button>
+                <div id="moves-list" class="moves-list">
+                    <p class="empty-moves">暂无落子</p>
                 </div>
             </div>
         </div>
+    </main>
 
-        <div class="panel game-actions">
-            <h3>⚡ 操作</h3>
-            <div class="action-buttons">
-                <button class="btn-action" id="btn-pass">
-                    <span>🏳️</span> 停一手
-                </button>
-                <button class="btn-action" id="btn-undo">
-                    <span>↩️</span> 悔棋
-                </button>
-                <button class="btn-action" id="btn-reset">
-                    <span>🔄</span> 重新开始
-                </button>
-                <button class="btn-action btn-save" id="btn-save">
-                    <span>💾</span> 保存棋谱
-                </button>
-            </div>
-        </div>
-
-        <div class="panel move-list">
-            <h3>📝 手数记录</h3>
-            <div class="moves-container" id="moves-list">
-                <p class="empty-moves">暂无落子</p>
-            </div>
-        </div>
-    </aside>
-
-    <!-- 棋盘区域 -->
-    <div class="board-area">
-        <div class="board-wrapper">
-            <div id="go-board" class="go-board" data-size="19"></div>
-            
-            <!-- 棋盘坐标 -->
-            <div class="board-coords coords-top">
-                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span>
-                <span>F</span><span>G</span><span>H</span><span>J</span><span>K</span>
-                <span>L</span><span>M</span><span>N</span><span>O</span><span>P</span>
-                <span>Q</span><span>R</span><span>S</span><span>T</span>
-            </div>
-            <div class="board-coords coords-bottom">
-                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span>
-                <span>F</span><span>G</span><span>H</span><span>J</span><span>K</span>
-                <span>L</span><span>M</span><span>N</span><span>O</span><span>P</span>
-                <span>Q</span><span>R</span><span>S</span><span>T</span>
-            </div>
-            <div class="board-coords coords-left">
-                <span>19</span><span>18</span><span>17</span><span>16</span><span>15</span>
-                <span>14</span><span>13</span><span>12</span><span>11</span><span>10</span>
-                <span>9</span><span>8</span><span>7</span><span>6</span><span>5</span>
-                <span>4</span><span>3</span><span>2</span><span>1</span>
-            </div>
-            <div class="board-coords coords-right">
-                <span>19</span><span>18</span><span>17</span><span>16</span><span>15</span>
-                <span>14</span><span>13</span><span>12</span><span>11</span><span>10</span>
-                <span>9</span><span>8</span><span>7</span><span>6</span><span>5</span>
-                <span>4</span><span>3</span><span>2</span><span>1</span>
-            </div>
-        </div>
-
-        <!-- 游戏状态显示 -->
-        <div class="game-status" id="game-status">
-            <span class="status-icon">⚫</span>
-            <span class="status-text">黑棋思考中...</span>
-        </div>
-    </div>
-</div>
-
-<!-- 保存棋谱弹窗 -->
-<div class="modal" id="save-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>💾 保存棋谱</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="record-title">棋谱标题</label>
-                <input type="text" id="record-title" placeholder="输入棋谱标题">
-            </div>
-            <div class="form-group">
-                <label for="record-desc">备注（可选）</label>
-                <textarea id="record-desc" rows="3" placeholder="添加备注信息"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="cancel-save">取消</button>
-            <button class="btn btn-primary" id="confirm-save">保存</button>
-        </div>
-    </div>
-</div>
-
-<!-- 游戏结束弹窗 -->
-<div class="modal" id="game-over-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>🏆 对局结束</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="game-result" id="game-result">
-                <div class="result-icon">🏆</div>
-                <div class="result-text">黑棋胜</div>
-                <div class="result-detail">中盘胜</div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="review-game">复盘</button>
-            <button class="btn btn-primary" id="new-game">新对局</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static_files', filename='js/go-board.js') }}"></script>
-<script src="{{ url_for('static_files', filename='js/go-game.js') }}"></script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/go-board.js"></script>
+    <script src="/static/js/ai-companion.js"></script>
+    <script src="/static/js/go-game.js"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /**
- * 围棋游戏 - 简化版
+ * 围棋游戏 - Phase 1 完善版
  */
 
 const EMPTY = 0;
@@ -10,36 +10,30 @@ const BOARD_SIZE = 19;
 let game = null;
 
 class GoGame {
-    constructor() {
-        console.log('GoGame constructor starting...');
+    constructor(options = {}) {
         this.board = this.createEmptyBoard();
         this.currentPlayer = BLACK;
         this.moves = [];
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
+        this.passes = 0;
         
-        // 检查GoBoard类是否存在
-        if (typeof GoBoard === 'undefined') {
-            console.error('GoGame ERROR: GoBoard class not found! Make sure go-board.js is loaded first.');
-            return;
-        }
+        // AI 设置
+        this.aiEnabled = options.aiEnabled || false;
+        this.aiDifficulty = options.aiDifficulty || 'medium';
+        this.aiColor = options.aiColor || WHITE;
+        
+        // AI 棋伴
+        this.companion = new AICompanion(options.companionType || 'adai');
         
         // 创建棋盘
-        console.log('GoGame: Creating GoBoard with containerId=go-board, size=', BOARD_SIZE);
-        this.boardView = new GoBoard('go-board', BOARD_SIZE);
-        
-        if (!this.boardView.container) {
-            console.error('GoGame ERROR: Board view failed to initialize - container not found');
-            return;
-        }
-        
+        this.boardView = new GoBoard('go-board', options.boardSize || BOARD_SIZE);
         this.boardView.addClickListener((row, col) => {
-            console.log('Game received click:', row, col);
             this.handleMove(row, col);
         });
         
         this.updateUI();
-        console.log('GoGame ready!');
+        this.updateCompanion();
     }
     
     createEmptyBoard() {
@@ -51,31 +45,54 @@ class GoGame {
     }
     
     handleMove(row, col) {
-        if (this.gameOver) {
-            this.toast('游戏已结束');
-            return;
+        if (this.gameOver) return;
+        
+        // AI 回合不响应
+        if (this.aiEnabled && this.currentPlayer === this.aiColor) return;
+        
+        const success = this.makeMove(row, col);
+        if (success) {
+            // 检查是否触发 AI 反馈
+            this.triggerCompanionFeedback(row, col);
+            
+            // 如果是 AI 对战，触发 AI 回合
+            if (this.aiEnabled && !this.gameOver) {
+                setTimeout(() => this.aiTurn(), 500);
+            }
         }
-        this.makeMove(row, col);
     }
     
     makeMove(row, col) {
-        console.log('makeMove:', row, col, 'player:', this.currentPlayer === BLACK ? '黑' : '白');
-        
-        // 验证
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-            return;
-        }
-        
+        // 验证坐标
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return false;
         if (this.board[row][col] !== EMPTY) {
-            this.toast('已有棋子');
-            return;
+            this.showToast('已有棋子');
+            return false;
         }
         
-        // 落子
+        // 临时落子
         this.board[row][col] = this.currentPlayer;
+        
+        // 检查自杀（提子后仍无气）
+        const ownGroup = this.getGroup(row, col);
+        const ownLibs = this.getLiberties(ownGroup);
         
         // 提子
         const captured = this.checkCaptures(this.currentPlayer === BLACK ? WHITE : BLACK);
+        
+        // 再次检查是否自杀
+        this.board[row][col] = EMPTY;
+        this.board[row][col] = this.currentPlayer;
+        const afterCapture = this.getGroup(row, col);
+        const afterLibs = this.getLiberties(afterCapture);
+        
+        if (afterLibs.size === 0 && captured.length === 0) {
+            this.board[row][col] = EMPTY;
+            this.showToast('禁着点，不能落子');
+            return false;
+        }
+        
+        // 执行落子
         captured.forEach(([r, c]) => {
             this.board[r][c] = EMPTY;
         });
@@ -89,7 +106,11 @@ class GoGame {
         
         // 记录
         const coord = this.boardView.coordToString(row, col);
-        this.moves.push({ player: this.currentPlayer, row, col, coord });
+        this.moves.push({
+            player: this.currentPlayer,
+            row, col, coord,
+            captured: captured.length
+        });
         
         // 更新视图
         this.boardView.setBoard(this.board);
@@ -97,7 +118,10 @@ class GoGame {
         
         // 换人
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
+        this.passes = 0;
         this.updateUI();
+        
+        return true;
     }
     
     checkCaptures(player) {
@@ -168,27 +192,106 @@ class GoGame {
         return libs;
     }
     
+    aiTurn() {
+        if (this.gameOver || this.currentPlayer !== this.aiColor) return;
+        
+        // 显示思考中
+        this.showCompanionBubble('thinking');
+        
+        setTimeout(() => {
+            const ai = new GoAI(this, this.aiDifficulty);
+            const move = ai.getMove();
+            
+            if (move) {
+                this.makeMove(move[0], move[1]);
+                this.triggerCompanionFeedback(move[0], move[1]);
+            } else {
+                this.pass();
+            }
+        }, 1000 + Math.random() * 500);
+    }
+    
+    triggerCompanionFeedback(row, col) {
+        // 简化反馈逻辑
+        if (!this.aiEnabled) return;
+        
+        // 检查是否被吃子
+        const lastMove = this.moves[this.moves.length - 1];
+        if (lastMove && lastMove.captured > 0) {
+            if (lastMove.player === this.aiColor) {
+                this.showCompanionBubble('capture');
+            } else {
+                this.showCompanionBubble('bad');
+            }
+        } else {
+            // 随机好反馈
+            if (Math.random() > 0.7) {
+                this.showCompanionBubble('good');
+            }
+        }
+    }
+    
+    showCompanionBubble(type) {
+        const msg = this.companion.showMessage(type);
+        const bubbleEl = document.getElementById('ai-bubble');
+        if (bubbleEl) {
+            bubbleEl.innerHTML = `<span class="emoji">${this.companion.emoji}</span> ${msg}`;
+            bubbleEl.className = `ai-bubble show ${type}`;
+            setTimeout(() => {
+                bubbleEl.classList.remove('show');
+            }, 3000);
+        }
+    }
+    
+    updateCompanion() {
+        const emojiEl = document.getElementById('ai-emoji');
+        const nameEl = document.getElementById('ai-name');
+        if (emojiEl) emojiEl.textContent = this.companion.emoji;
+        if (nameEl) nameEl.textContent = this.companion.name;
+    }
+    
     pass() {
+        if (this.gameOver) return;
         this.moves.push({ player: this.currentPlayer, type: 'pass' });
-        this.toast(`${this.currentPlayer === BLACK ? '黑' : '白'} Pass`);
+        this.passes++;
+        this.showToast(`${this.currentPlayer === BLACK ? '黑' : '白'} Pass`);
+        
+        if (this.passes >= 2) {
+            this.endGame();
+            return;
+        }
+        
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
         this.updateUI();
+        
+        if (this.aiEnabled && !this.gameOver) {
+            setTimeout(() => this.aiTurn(), 500);
+        }
     }
     
     resign() {
+        if (this.gameOver) return;
         this.gameOver = true;
-        this.toast(`${this.currentPlayer === BLACK ? '白' : '黑'}获胜！`);
+        const winner = this.currentPlayer === BLACK ? '白' : '黑';
+        this.showToast(`${winner}方获胜！`);
+        this.showCompanionBubble(this.currentPlayer === this.aiColor ? 'lose' : 'win');
+    }
+    
+    endGame() {
+        this.gameOver = true;
+        this.showToast('游戏结束！');
     }
     
     updateUI() {
-        const player = document.getElementById('current-player');
-        if (player) {
-            player.textContent = this.currentPlayer === BLACK ? '黑棋' : '白棋';
-            player.className = 'turn-indicator ' + (this.currentPlayer === BLACK ? 'black' : 'white');
-        }
+        // 当前玩家
+        const stone = document.getElementById('currentStone');
+        const player = document.getElementById('currentPlayer');
+        if (stone) stone.textContent = this.currentPlayer === BLACK ? '⚫' : '⚪';
+        if (player) player.textContent = this.currentPlayer === BLACK ? '黑方回合' : '白方回合';
         
-        const blackCap = document.getElementById('black-captures');
-        const whiteCap = document.getElementById('white-captures');
+        // 提子
+        const blackCap = document.getElementById('blackCaptures');
+        const whiteCap = document.getElementById('whiteCaptures');
         if (blackCap) blackCap.textContent = this.captures[BLACK];
         if (whiteCap) whiteCap.textContent = this.captures[WHITE];
         
@@ -209,21 +312,21 @@ class GoGame {
             const s = m.player === BLACK ? '⚫' : '⚪';
             const n = m.player === BLACK ? '黑' : '白';
             if (m.type === 'pass') {
-                html += `<div class="move-item">${i+1}. ${s} ${n} 停一手</div>`;
+                html += `<div class="move-item">${i+1}. ${s} ${n} Pass</div>`;
             } else {
-                html += `<div class="move-item">${i+1}. ${s} ${n} ${m.coord}</div>`;
+                html += `<div class="move-item"><span class="move-num">${i+1}.</span> ${s} ${n} <span class="move-coord">${m.coord}</span></div>`;
             }
         });
         el.innerHTML = html;
     }
     
-    toast(msg) {
+    showToast(msg) {
         const t = document.createElement('div');
         t.className = 'toast show';
-        t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;';
+        t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
         t.textContent = msg;
         document.body.appendChild(t);
-        setTimeout(() => t.remove(), 2000);
+        setTimeout(() => t.remove(), 2500);
     }
     
     newGame() {
@@ -232,24 +335,43 @@ class GoGame {
         this.moves = [];
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
+        this.passes = 0;
+        
         this.boardView.setBoard(this.board);
         this.boardView.clearLastMove();
         this.updateUI();
-        this.toast('新游戏开始！');
+        
+        this.showToast('新游戏开始！');
     }
 }
 
 // 全局函数
 function initGame() {
-    console.log('initGame');
-    game = new GoGame();
+    const difficulty = document.getElementById('aiDifficulty')?.value || 'none';
+    const boardSize = parseInt(document.getElementById('boardSize')?.value || '19');
+    const companion = document.getElementById('companionType')?.value || 'adai';
+    
+    game = new GoGame({
+        aiEnabled: difficulty !== 'none',
+        aiDifficulty: difficulty || 'medium',
+        boardSize: boardSize,
+        companionType: companion
+    });
 }
 
-function newGame() { game && game.newGame(); }
+function newGame() {
+    if (game) {
+        const difficulty = document.getElementById('aiDifficulty')?.value || 'none';
+        game.aiEnabled = difficulty !== 'none';
+        game.aiDifficulty = difficulty || 'medium';
+        game.newGame();
+    }
+}
+
 function passTurn() { game && game.pass(); }
 function resign() { game && game.resign(); }
 
+// 页面加载
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM ready');
     setTimeout(initGame, 200);
 });

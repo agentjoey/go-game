@@ -1,52 +1,19 @@
-/* ========================================
-   围棋学堂 - 青少儿围棋学习平台
-   自定义样式表
-   ======================================== */
+/* 围棋学堂 - Phase 1 样式
+   配色方案：墨黑 + 宣纸米白 + 朱砂红
+*/
 
-/* 基础变量 */
 :root {
-    /* 主色调 - 明快活泼的青少儿风格 */
-    --primary-color: #4A90D9;
-    --primary-dark: #357ABD;
-    --primary-light: #7AB8E8;
-    --secondary-color: #F5A623;
-    --secondary-light: #F7C056;
-    --accent-green: #7ED321;
-    --accent-pink: #FF6B9D;
-    --accent-purple: #9B59B6;
-    --accent-cyan: #50E3C2;
-    
-    /* 卡片渐变 */
-    --gradient-game: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-puzzle: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --gradient-tutorial: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --gradient-collection: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    
-    /* 围棋棋盘色 */
-    --board-color: #DEB887;
-    --board-dark: #C4956A;
-    --stone-black: #1a1a1a;
-    --stone-white: #f5f5f5;
-    
-    /* 背景色 */
-    --bg-light: #f8fafc;
-    --bg-white: #ffffff;
-    --text-dark: #2c3e50;
-    --text-muted: #6c757d;
-    
-    /* 动画 */
-    --transition-fast: 0.2s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    
-    /* 阴影 */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-    --shadow-lg: 0 8px 30px rgba(0,0,0,0.15);
-    --shadow-card: 0 10px 40px rgba(0,0,0,0.1);
+    --ink-black: #1a1a1a;
+    --rice-paper: #f5f0e8;
+    --cinnabar-red: #c45c48;
+    --stone-black: #2d2d2d;
+    --stone-white: #faf8f5;
+    --bamboo-green: #6b8e6b;
+    --gold-foil: #c9a227;
+    --mist-gray: #8a8580;
+    --board-wood: #e8dfc8;
 }
 
-/* 基础样式重置 */
 * {
     margin: 0;
     padding: 0;
@@ -54,756 +21,403 @@
 }
 
 body {
-    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
-    line-height: 1.6;
-    overflow-x: hidden;
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--rice-paper);
+    color: var(--ink-black);
+    min-height: 100vh;
 }
 
-a {
-    text-decoration: none;
-    transition: var(--transition-fast);
-}
-
-/* ========================================
-   导航栏
-   ======================================== */
+/* 导航栏 */
 .navbar {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    padding: 0.8rem 0;
-    box-shadow: var(--shadow-md);
-    backdrop-filter: blur(10px);
+    background: white;
+    padding: 12px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .navbar-brand {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
+    color: var(--ink-black);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-links a {
+    color: var(--mist-gray);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--cinnabar-red);
+    background: rgba(196, 92, 72, 0.1);
+}
+
+/* 主布局 */
+.container {
+    max-width: 1200px;
+}
+
+.game-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 260px;
+    gap: 24px;
+    align-items: start;
+}
+
+/* AI 棋伴面板 */
+.companion-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.companion-card {
     display: flex;
     align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
-.brand-text {
-    background: linear-gradient(to right, #fff, #e0e0e0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.navbar-nav .nav-link {
-    color: rgba(255,255,255,0.9) !important;
-    font-weight: 500;
-    padding: 0.5rem 1rem !important;
-    border-radius: 20px;
-    margin: 0 0.2rem;
-    transition: var(--transition-fast);
-}
-
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link.active {
-    color: #fff !important;
-    background: rgba(255,255,255,0.2);
-    transform: translateY(-2px);
-}
-
-.navbar-toggler {
-    border: none;
-    padding: 0.5rem;
-}
-
-.navbar-toggler:focus {
-    box-shadow: none;
-}
-
-/* ========================================
-   Hero Section
-   ======================================== */
-.hero-section {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--accent-purple) 100%);
-    padding: 140px 0 100px;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    animation: float 20s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-
-.go-stone-decoration {
-    margin-bottom: 1.5rem;
-}
-
-.stone {
+.companion-avatar {
     font-size: 3rem;
-    display: inline-block;
-    animation: bounce 2s ease-in-out infinite;
-}
-
-.black-stone {
-    color: var(--stone-black);
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    animation-delay: 0s;
-}
-
-.white-stone {
-    color: var(--stone-white);
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    animation-delay: 1s;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    letter-spacing: 2px;
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    color: rgba(255,255,255,0.9);
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
-
-.hero-description {
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.8);
-    max-width: 500px;
-    margin: 0 auto 1.5rem;
-}
-
-.hero-badges .badge {
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 500;
-    box-shadow: var(--shadow-sm);
-}
-
-.wave-bottom {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    line-height: 0;
-}
-
-.wave-bottom svg {
-    width: 100%;
-    height: auto;
-}
-
-/* ========================================
-   功能卡片区域
-   ======================================== */
-.features-section {
-    padding: 60px 0 80px;
-    background: var(--bg-white);
-}
-
-.feature-card-link {
-    display: block;
-    height: 100%;
-}
-
-.feature-card {
-    background: var(--bg-white);
-    border-radius: 24px;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    transition: var(--transition-normal);
-    border: none;
-    box-shadow: var(--shadow-card);
-}
-
-.feature-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    transition: var(--transition-normal);
-}
-
-.card-game::before {
-    background: var(--gradient-game);
-}
-
-.card-puzzle::before {
-    background: var(--gradient-puzzle);
-}
-
-.card-tutorial::before {
-    background: var(--gradient-tutorial);
-}
-
-.card-collection::before {
-    background: var(--gradient-collection);
-}
-
-.feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-}
-
-.feature-card:hover::before {
-    height: 100%;
-    opacity: 0.05;
-}
-
-.card-icon {
-    width: 90px;
-    height: 90px;
-    margin: 0 auto 1.5rem;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--rice-paper), #e8e4dc);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.card-game .card-icon {
-    background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
-}
-
-.card-puzzle .card-icon {
-    background: linear-gradient(135deg, rgba(240,147,251,0.15) 0%, rgba(245,87,108,0.15) 100%);
-}
-
-.card-tutorial .card-icon {
-    background: linear-gradient(135deg, rgba(79,172,254,0.15) 0%, rgba(0,242,254,0.15) 100%);
-}
-
-.card-collection .card-icon {
-    background: linear-gradient(135deg, rgba(67,233,123,0.15) 0%, rgba(56,249,215,0.15) 100%);
-}
-
-.emoji-icon {
-    font-size: 3rem;
-    display: block;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.card-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 0.75rem;
-    position: relative;
-    z-index: 1;
-}
-
-.card-desc {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-}
-
-.card-hover-effect {
-    position: relative;
-    z-index: 1;
-}
-
-.btn-enter {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.5rem;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: var(--transition-fast);
-    background: transparent;
-}
-
-.card-game .btn-enter {
-    color: #667eea;
-    border: 2px solid #667eea;
-}
-
-.card-puzzle .btn-enter {
-    color: #f5576c;
-    border: 2px solid #f5576c;
-}
-
-.card-tutorial .btn-enter {
-    color: #4facfe;
-    border: 2px solid #4facfe;
-}
-
-.card-collection .btn-enter {
-    color: #43e97b;
-    border: 2px solid #43e97b;
-}
-
-.feature-card:hover .btn-enter {
-    color: #fff;
-}
-
-.card-game:hover .btn-enter {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: transparent;
-}
-
-.card-puzzle:hover .btn-enter {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    border-color: transparent;
-}
-
-.card-tutorial:hover .btn-enter {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    border-color: transparent;
-}
-
-.card-collection:hover .btn-enter {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    border-color: transparent;
-}
-
-/* ========================================
-   棋盘展示区
-   ======================================== */
-.board-showcase {
-    padding: 80px 0;
-    background: var(--bg-light);
-}
-
-.section-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 1.5rem;
-}
-
-.section-desc {
-    color: var(--text-muted);
-    font-size: 1.05rem;
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
-}
-
-.feature-list {
-    list-style: none;
-    padding: 0;
-}
-
-.feature-list li {
-    padding: 0.6rem 0;
-    font-size: 1rem;
-    color: var(--text-dark);
-}
-
-.board-preview {
+.companion-info {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+}
+
+.companion-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink-black);
+}
+
+.companion-status {
+    font-size: 0.85rem;
+    color: var(--mist-gray);
+}
+
+/* AI 气泡 */
+.ai-bubble {
+    background: var(--rice-paper);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    min-height: 52px;
+}
+
+.ai-bubble.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ai-bubble .emoji {
+    margin-right: 8px;
+}
+
+.ai-bubble.thinking {
+    background: linear-gradient(135deg, #f0f4ff, #e8ecf4);
+    border-left: 4px solid #5a7a9c;
+}
+
+.ai-bubble.good {
+    background: linear-gradient(135deg, #f0fff4, #e8f5ec);
+    border-left: 4px solid var(--bamboo-green);
+}
+
+.ai-bubble.bad {
+    background: linear-gradient(135deg, #fff4f0, #fce8e4);
+    border-left: 4px solid var(--cinnabar-red);
+}
+
+.ai-bubble.capture {
+    background: linear-gradient(135deg, #fff8e8, #fcf4dc);
+    border-left: 4px solid var(--gold-foil);
+}
+
+.dots {
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* AI 设置 */
+.ai-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.setting-item label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--mist-gray);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-select-sm {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    background: white;
+    width: 100%;
+}
+
+.form-select-sm:focus {
+    border-color: var(--cinnabar-red);
+    box-shadow: 0 0 0 3px rgba(196, 92, 72, 0.1);
+}
+
+/* 棋盘区域 */
+.board-area {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+}
+
+.board-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 16px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.current-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.stone-icon {
+    font-size: 1.5rem;
+}
+
+.captures {
+    display: flex;
+    gap: 16px;
+    font-size: 0.9rem;
+    color: var(--mist-gray);
+}
+
+.capture-count {
+    font-weight: 700;
+    color: var(--ink-black);
+}
+
+.board-wrapper {
+    background: white;
+    padding: 16px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    width: 100%;
+    max-width: 600px;
 }
 
 .go-board {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(145deg, var(--board-color) 0%, var(--board-dark) 100%);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 
-        0 20px 60px rgba(0,0,0,0.3),
-        inset 0 2px 4px rgba(255,255,255,0.3),
-        inset 0 -2px 4px rgba(0,0,0,0.1);
-    position: relative;
-    animation: boardFloat 4s ease-in-out infinite;
-}
-
-@keyframes boardFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(0.5deg); }
-}
-
-.board-grid {
     width: 100%;
-    height: 100%;
-    position: relative;
+    aspect-ratio: 1;
 }
 
-.grid-lines {
-    position: absolute;
-    top: 5%;
-    left: 5%;
-    right: 5%;
-    bottom: 5%;
-}
-
-.h-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgba(0,0,0,0.6);
-}
-
-.v-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: rgba(0,0,0,0.6);
-}
-
-.star-points {
-    position: absolute;
-    top: 5%;
-    left: 5%;
-    right: 5%;
-    bottom: 5%;
-}
-
-.star-point {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.board-stones {
-    position: absolute;
-    top: 5%;
-    left: 5%;
-    right: 5%;
-    bottom: 5%;
-}
-
-.board-stone {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    animation: placeStone 0.5s ease-out;
-}
-
-.board-stone.black {
-    background: radial-gradient(circle at 30% 30%, #4a4a4a, #1a1a1a);
-}
-
-.board-stone.white {
-    background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
-}
-
-@keyframes placeStone {
-    0% { transform: translate(-50%, -50%) scale(0); }
-    50% { transform: translate(-50%, -50%) scale(1.1); }
-    100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-/* ========================================
-   页脚
-   ======================================== */
-.footer {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: rgba(255,255,255,0.8);
-    padding: 60px 0 30px;
-}
-
-.footer-brand {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 1rem;
+.board-controls {
     display: flex;
-    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
 }
 
-.footer-desc {
-    color: rgba(255,255,255,0.6);
-    line-height: 1.8;
-    font-size: 0.95rem;
+.board-controls .btn {
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-weight: 500;
 }
 
-.footer-title {
-    font-size: 1.1rem;
+/* 棋谱面板 */
+.moves-panel {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    max-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.panel-header h5 {
+    margin: 0;
     font-weight: 600;
-    color: #fff;
-    margin-bottom: 1.2rem;
 }
 
-.footer-links {
-    list-style: none;
-    padding: 0;
+.moves-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
 }
 
-.footer-links li {
-    margin-bottom: 0.7rem;
-}
-
-.footer-links a {
-    color: rgba(255,255,255,0.6);
-    transition: var(--transition-fast);
-}
-
-.footer-links a:hover {
-    color: var(--secondary-color);
-    padding-left: 5px;
-}
-
-.social-links {
-    display: flex;
-    gap: 1rem;
-}
-
-.social-link {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
+.move-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 1.2rem;
-    transition: var(--transition-fast);
-}
-
-.social-link:hover {
-    background: var(--secondary-color);
-    color: #fff;
-    transform: translateY(-3px);
-}
-
-.footer-divider {
-    border-color: rgba(255,255,255,0.1);
-    margin: 2rem 0;
-}
-
-.footer-bottom {
-    align-items: center;
-}
-
-.copyright {
-    color: rgba(255,255,255,0.5);
-    margin: 0;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
     font-size: 0.9rem;
 }
 
-.footer-meta {
-    margin: 0;
+.move-item:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.move-num {
+    color: var(--mist-gray);
+    min-width: 28px;
+}
+
+.move-coord {
+    background: var(--rice-paper);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.empty-moves {
+    text-align: center;
+    color: var(--mist-gray);
+    padding: 40px 20px;
     font-size: 0.9rem;
 }
 
-.footer-meta a {
-    color: rgba(255,255,255,0.5);
+/* 按钮样式 */
+.btn-primary {
+    background: linear-gradient(135deg, var(--cinnabar-red), #a84838);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
 }
 
-.footer-meta a:hover {
-    color: var(--secondary-color);
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(196, 92, 72, 0.3);
 }
 
-/* ========================================
-   响应式设计
-   ======================================== */
-@media (max-width: 991.98px) {
-    .hero-title {
-        font-size: 2.8rem;
-    }
-    
-    .hero-section {
-        padding: 120px 0 80px;
-    }
-    
-    .go-board {
-        width: 350px;
-        height: 350px;
-        margin-top: 2rem;
-    }
-    
-    .board-stone {
-        width: 26px;
-        height: 26px;
-    }
-    
-    .feature-card {
-        padding: 1.5rem;
-    }
-    
-    .card-icon {
-        width: 75px;
-        height: 75px;
-    }
-    
-    .emoji-icon {
-        font-size: 2.5rem;
-    }
+.btn-outline-secondary {
+    border: 2px solid var(--ink-black);
+    color: var(--ink-black);
+    background: transparent;
 }
 
-@media (max-width: 767.98px) {
-    .hero-title {
-        font-size: 2.2rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.2rem;
-    }
-    
-    .hero-section {
-        padding: 100px 0 60px;
-    }
-    
-    .go-board {
-        width: 300px;
-        height: 300px;
-        padding: 15px;
-    }
-    
-    .board-stone {
-        width: 22px;
-        height: 22px;
-    }
-    
-    .star-point {
-        width: 8px;
-        height: 8px;
-    }
-    
-    .section-title {
-        font-size: 1.6rem;
-    }
-    
-    .features-section {
-        padding: 40px 0 60px;
-    }
-    
-    .feature-card {
-        margin-bottom: 1rem;
-    }
-    
-    .footer {
-        padding: 40px 0 20px;
-    }
-    
-    .footer-title {
-        margin-top: 1.5rem;
-    }
-    
-    .footer-bottom {
-        text-align: center;
-    }
-    
-    .footer-meta {
-        text-align: center !important;
-        margin-top: 0.5rem;
-    }
+.btn-outline-secondary:hover {
+    background: var(--ink-black);
+    color: white;
 }
 
-@media (max-width: 575.98px) {
-    .hero-title {
-        font-size: 1.8rem;
-    }
-    
-    .hero-badges .badge {
-        display: inline-block;
-        margin-bottom: 0.5rem;
-    }
-    
-    .go-board {
-        width: 280px;
-        height: 280px;
-    }
-    
-    .board-stone {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .card-title {
-        font-size: 1.2rem;
-    }
-    
-    .emoji-icon {
-        font-size: 2rem;
-    }
+.btn-outline-danger {
+    border: 2px solid var(--cinnabar-red);
+    color: var(--cinnabar-red);
+    background: transparent;
 }
 
-/* ========================================
-   动画效果增强
-   ======================================== */
-.feature-card {
-    animation: fadeInUp 0.6s ease-out forwards;
-    opacity: 0;
+.btn-outline-danger:hover {
+    background: var(--cinnabar-red);
+    color: white;
 }
 
-.feature-card:nth-child(1) { animation-delay: 0.1s; }
-.feature-card:nth-child(2) { animation-delay: 0.2s; }
-.feature-card:nth-child(3) { animation-delay: 0.3s; }
-.feature-card:nth-child(4) { animation-delay: 0.4s; }
+/* Toast */
+.toast {
+    animation: toastIn 0.3s ease;
+}
 
-@keyframes fadeInUp {
+@keyframes toastIn {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translate(-50%, -50%) scale(0.9);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 
-/* 滚动条美化 */
-::-webkit-scrollbar {
-    width: 8px;
+/* 响应式 */
+@media (max-width: 1024px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .companion-panel {
+        order: 2;
+    }
+    
+    .board-area {
+        order: 1;
+    }
+    
+    .moves-panel {
+        order: 3;
+        max-height: 300px;
+    }
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-light);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-light);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
-}
-
-/* 选中文字样式 */
-::selection {
-    background: var(--primary-light);
-    color: #fff;
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 12px;
+    }
+    
+    .nav-links a {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .board-wrapper {
+        padding: 8px;
+    }
 }
