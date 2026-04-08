@@ -54,14 +54,20 @@ class GoGame {
     
     handleMove(row, col) {
         if (this.gameOver) return;
-        
+
+        // 费曼模式标记模式
+        if (this.markingMode) {
+            this.handleFeynmanMark(row, col);
+            return;
+        }
+
         // AI 回合不响应
         if (this.aiEnabled && this.currentPlayer === this.aiColor) return;
-        
+
         const success = this.makeMove(row, col);
         if (success) {
             this.triggerCompanionFeedback(row, col);
-            
+
             // AI 回合
             if (this.aiEnabled && !this.gameOver) {
                 setTimeout(() => this.aiTurn(), 500);
@@ -337,6 +343,184 @@ class GoGame {
         this.showToast('已悔棋');
     }
     
+    // ==================== 费曼模式 ====================
+    
+    feynmanActive = false;
+    feynmanTimer = null;
+    feynmanCountdown = 10;
+    feynmanSuboptimalMove = null; // AI的次优手下在这里
+    markingMode = false;
+    
+    triggerFeynmanMode(suboptimalRow, suboptimalCol, optimalRow, optimalCol) {
+        if (this.feynmanActive) return;
+        
+        this.feynmanActive = true;
+        this.feynmanSuboptimalMove = { suboptimal: [suboptimalRow, suboptimalCol], optimal: [optimalRow, optimalCol] };
+        this.feynmanCountdown = 10;
+        
+        // 1. 棋盘边缘闪烁金色边框
+        const wrapper = document.getElementById('boardWrapper');
+        if (wrapper) {
+            wrapper.classList.add('feynman-active');
+            setTimeout(() => wrapper.classList.remove('feynman-active'), 1000);
+        }
+        
+        // 2. 显示费曼模式 banner
+        const banner = document.getElementById('feynmanBanner');
+        const actions = document.getElementById('feynmanActions');
+        const controls = document.getElementById('boardControls');
+        
+        if (banner) {
+            banner.style.display = 'flex';
+            document.getElementById('feynmanText').textContent = '⚡ 费曼模式 - 找出AI的错误！';
+        }
+        if (actions) actions.style.display = 'flex';
+        if (controls) controls.style.display = 'none';
+        
+        // 3. AI气泡示弱
+        this.companion.showBubble('feynman');
+        
+        // 4. 在AI最后手上显示问号标记
+        this.boardView.setQuestionMark(suboptimalRow, suboptimalCol);
+        
+        // 5. 开始倒计时
+        this.startFeynmanTimer();
+    }
+    
+    startFeynmanTimer() {
+        const timerEl = document.getElementById('feynmanTimer');
+        if (timerEl) {
+            timerEl.textContent = `⏱️ ${this.feynmanCountdown}s`;
+        }
+        
+        this.feynmanTimer = setInterval(() => {
+            this.feynmanCountdown--;
+            if (timerEl) {
+                timerEl.textContent = `⏱️ ${this.feynmanCountdown}s`;
+            }
+            
+            if (this.feynmanCountdown <= 0) {
+                this.feynmanSkip();
+            }
+        }, 1000);
+    }
+    
+    feynmanHint() {
+        if (!this.feynmanActive) return;
+        
+        const optimal = this.feynmanSuboptimalMove?.optimal;
+        if (!optimal) return;
+        
+        // 显示渐进式提示
+        const [row, col] = optimal;
+        const coord = this.boardView.coordToString(row, col);
+        
+        // 高亮提示区域
+        this.boardView.highlightArea(row, col);
+        
+        // 根据难度给出不同层次的提示
+        const hints = [
+            '试着用另一种思路来思考这个问题~',
+            `也许可以关注棋盘的这个区域：${coord}`,
+            `正确答案是：${coord}，想想为什么？`
+        ];
+        
+        const hintLevel = 3 - this.feynmanCountdown; // 剩余时间越少，提示越明确
+        const hint = hints[Math.min(hintLevel, 2)];
+        
+        this.showToast(hint);
+    }
+    
+    feynmanMarkBetter() {
+        if (!this.feynmanActive) return;
+        
+        this.markingMode = true;
+        this.boardView.setMarkingMode(true);
+        
+        // 显示提示
+        const wrapper = document.getElementById('boardWrapper');
+        if (wrapper) wrapper.classList.add('marking-mode');
+        
+        // 修改 banner 文字
+        document.getElementById('feynmanText').textContent = '🎯 标记模式 - 点击你认为更好的位置';
+        
+        // 添加提示文字
+        const hint = document.createElement('div');
+        hint.className = 'marking-hint';
+        hint.id = 'markingHint';
+        hint.textContent = '点击棋盘上你认为比AI更好的位置';
+        wrapper?.parentElement?.appendChild(hint);
+    }
+    
+    handleFeynmanMark(row, col) {
+        if (!this.markingMode || !this.feynmanActive) return false;
+        
+        const optimal = this.feynmanSuboptimalMove?.optimal;
+        if (!optimal) return false;
+        
+        const [optRow, optCol] = optimal;
+        const isCorrect = row === optRow && col === optCol;
+        
+        this.markingMode = false;
+        this.boardView.setMarkingMode(false);
+        
+        const wrapper = document.getElementById('boardWrapper');
+        if (wrapper) wrapper.classList.remove('marking-mode');
+        
+        document.getElementById('markingHint')?.remove();
+        document.getElementById('feynmanText').textContent = isCorrect ? '🎉 正确！' : '❌ 不对哦~';
+        
+        if (isCorrect) {
+            // 显示正确位置标记
+            this.boardView.showCorrectMark(row, col);
+            this.companion.showBubble('brilliant');
+            this.companion.rapport += 10; // 增加羁绊值
+            this.showToast('太棒了！你发现了AI的错误！羁绊值+10 💕');
+        } else {
+            // 显示AI的次优手标记
+            this.companion.showBubble('encourage');
+            this.showToast('再想想看~ 不着急');
+        }
+        
+        // 3秒后结束费曼模式
+        setTimeout(() => this.endFeynmanMode(), 2000);
+        
+        return true;
+    }
+    
+    feynmanSkip() {
+        if (!this.feynmanActive) return;
+        
+        clearInterval(this.feynmanTimer);
+        this.endFeynmanMode();
+        this.showToast('费曼模式已跳过');
+    }
+    
+    endFeynmanMode() {
+        if (!this.feynmanActive) return;
+        
+        this.feynmanActive = false;
+        this.markingMode = false;
+        clearInterval(this.feynmanTimer);
+        
+        // 隐藏UI
+        const banner = document.getElementById('feynmanBanner');
+        const actions = document.getElementById('feynmanActions');
+        const controls = document.getElementById('boardControls');
+        
+        if (banner) banner.style.display = 'none';
+        if (actions) actions.style.display = 'none';
+        if (controls) controls.style.display = 'flex';
+        
+        // 清除标记
+        this.boardView.clearFeynmanMarks();
+        
+        const wrapper = document.getElementById('boardWrapper');
+        if (wrapper) wrapper.classList.remove('marking-mode', 'feynman-active');
+        
+        document.getElementById('markingHint')?.remove();
+    }
+    
     endGame() {
         this.gameOver = true;
         this.showToast('游戏结束！双方Pass');
@@ -443,6 +627,11 @@ function newGame() {
 function passTurn() { game && game.pass(); }
 function resign() { game && game.resign(); }
 function undo() { game && game.undo(); }
+
+// 费曼模式全局方法
+function feynmanHint() { game && game.feynmanHint(); }
+function feynmanMarkBetter() { game && game.feynmanMarkBetter(); }
+function feynmanSkip() { game && game.feynmanSkip(); }
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initGame, 200);

@@ -59,6 +59,13 @@ class GoBoard {
             const hy = (this.hoverCell.row + 0.5) * cellSize;
             svg += `<circle class="candidate-stone" cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(0,0,0,0.15)" stroke="#666" stroke-width="0.3" stroke-dasharray="2,1"/>`;
         }
+
+        // 费曼模式高亮区域
+        this.highlightCells.forEach(({ row, col }) => {
+            const hx = (col + 0.5) * cellSize;
+            const hy = (row + 0.5) * cellSize;
+            svg += `<circle cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(255,215,0,0.3)" stroke="#ffd700" stroke-width="0.5" stroke-dasharray="3,2"/>`;
+        });
         
         // 棋子
         for (let r = 0; r < size; r++) {
@@ -85,6 +92,17 @@ class GoBoard {
                     if (this.lastMove && this.lastMove[0] === r && this.lastMove[1] === c) {
                         const markerColor = isBlack ? '#fff' : '#1a1a1a';
                         svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.12}" fill="${markerColor}"/>`;
+                    }
+
+                    // 费曼模式问号标记
+                    if (this.questionMark && this.questionMark.row === r && this.questionMark.col === c) {
+                        svg += `<text x="${cx}" y="${cy + cellSize*0.15}" text-anchor="middle" font-size="${cellSize*0.4}" fill="#c45c48" font-weight="bold">?</text>`;
+                    }
+
+                    // 正确标记
+                    if (this.correctMarkPos && this.correctMarkPos.row === r && this.correctMarkPos.col === c) {
+                        svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.25}" fill="#5a8f5a" stroke="#fff" stroke-width="${cellSize*0.05}"/>`;
+                        svg += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.25}" fill="#fff" font-weight="bold">✓</text>`;
                     }
                 }
             }
@@ -179,7 +197,7 @@ class GoBoard {
             this.render();
         }, 400);
     }
-    
+
     // 播放提子动画
     playCaptureAnimation(positions) {
         positions.forEach(([r, c], i) => {
@@ -190,7 +208,7 @@ class GoBoard {
                     const cellSize = 100 / this.size;
                     const cx = (c + 0.5) * cellSize;
                     const cy = (r + 0.5) * cellSize;
-                    
+
                     const circle = svg.querySelector(`circle:nth-child(${this.getStoneIndex(r, c)})`);
                     if (circle) {
                         circle.classList.add('capture-effect');
@@ -199,10 +217,61 @@ class GoBoard {
             }, i * 100);
         });
     }
-    
+
     getStoneIndex(row, col) {
         // 计算棋子在 SVG 中的索引（粗略估算）
         return 1 + (row * this.size + col);
+    }
+
+    // ==================== 费曼模式标记 ====================
+
+    questionMark = null;
+    markingMode = false;
+    highlightCells = [];
+    correctMarkPos = null;
+
+    setQuestionMark(row, col) {
+        this.questionMark = { row, col };
+        this.render();
+    }
+
+    setMarkingMode(enabled) {
+        this.markingMode = enabled;
+        this.render();
+    }
+
+    highlightArea(row, col) {
+        this.highlightCells = [];
+        // 高亮周围3x3区域
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = row + dr;
+                const c = col + dc;
+                if (r >= 0 && r < this.size && c >= 0 && c < this.size) {
+                    this.highlightCells.push({ row: r, col: c });
+                }
+            }
+        }
+        this.render();
+
+        // 3秒后清除
+        setTimeout(() => {
+            this.highlightCells = [];
+            this.render();
+        }, 3000);
+    }
+
+    showCorrectMark(row, col) {
+        this.correctMarkPos = { row, col };
+        this.render();
+    }
+
+    clearFeynmanMarks() {
+        this.questionMark = null;
+        this.markingMode = false;
+        this.highlightCells = [];
+        this.correctMarkPos = null;
+        this.render();
     }
 }
 
