@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎 - YiGo 弈Go</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-paper: #f5f0e8;
+            --color-ink: #1a1a1a;
+            --color-vermillion: #c45c48;
+            --color-bamboo: #6b8e6b;
+            --color-muted: #8a8580;
+            --color-wood: #fff3e0;
+            --color-sky: #e3f2fd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--color-paper);
+            color: var(--color-ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========== 步骤1: 欢迎页 ========== */
+        .onboarding-step {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .onboarding-step.active {
+            display: flex;
+        }
+
+        .welcome-page {
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+        }
+
+        .logo-circle {
+            width: 150px;
+            height: 150px;
+            background: #ffffff;
+            border: 3px solid var(--color-ink);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .stone {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .stone-black {
+            background: #2d2d2d;
+            top: 45px;
+            left: 45px;
+        }
+
+        .stone-white {
+            background: #faf8f5;
+            border: 2px solid #e0e0e0;
+            top: 45px;
+            right: 45px;
+        }
+
+        .brand-name {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-ink);
+            margin-top: 20px;
+        }
+
+        .brand-name-zh {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--color-vermillion);
+            margin-bottom: 20px;
+        }
+
+        .tagline {
+            font-size: 24px;
+            color: var(--color-ink);
+            margin-bottom: 16px;
+        }
+
+        .sub-tagline {
+            font-size: 18px;
+            color: var(--color-muted);
+            margin-bottom: 8px;
+        }
+
+        .cta-button {
+            background: var(--color-vermillion);
+            color: #ffffff;
+            border: none;
+            padding: 18px 60px;
+            font-size: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 40px;
+            font-weight: 500;
+        }
+
+        .cta-button:hover {
+            background: #b04d3d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(196, 92, 72, 0.3);
+        }
+
+        .login-link {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #5a7a9c;
+            cursor: pointer;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .language-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--color-muted);
+        }
+
+        /* ========== 步骤2: AI伙伴选择页 ========== */
+        .companion-page {
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: var(--color-ink);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .back-button:hover {
+            color: var(--color-vermillion);
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-ink);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--color-muted);
+        }
+
+        .companion-cards {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .companion-card {
+            background: #ffffff;
+            border: 2px solid var(--color-ink);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .companion-card:hover {
+            border-color: var(--color-bamboo);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .companion-card.selected {
+            border-color: var(--color-bamboo);
+            background: #e8f5e9;
+        }
+
+        .companion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .companion-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-right: 16px;
+            border: 2px solid var(--color-ink);
+            background: #ffffff;
+        }
+
+        .companion-card:nth-child(1) .companion-avatar {
+            background: #ffffff;
+        }
+
+        .companion-card:nth-child(2) .companion-avatar {
+            background: var(--color-wood);
+        }
+
+        .companion-card:nth-child(3) .companion-avatar {
+            background: var(--color-sky);
+        }
+
+        .companion-info h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .companion-type {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .companion-card:nth-child(1) .companion-type {
+            color: var(--color-bamboo);
+        }
+
+        .companion-card:nth-child(2) .companion-type {
+            color: #c9a227;
+        }
+
+        .companion-card:nth-child(3) .companion-type {
+            color: #5a7a9c;
+        }
+
+        .companion-quote {
+            font-size: 14px;
+            color: var(--color-ink);
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        .companion-suitable {
+            font-size: 13px;
+            color: var(--color-muted);
+        }
+
+        .confirm-button {
+            background: var(--color-vermillion);
+            color: #ffffff;
+            border: none;
+            padding: 16px 60px;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            font-weight: 500;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .confirm-button:hover {
+            background: #b04d3d;
+        }
+
+        .confirm-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .confirm-wrapper {
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 480px) {
+            .logo-circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .stone {
+                width: 32px;
+                height: 32px;
+            }
+
+            .stone-black {
+                top: 36px;
+                left: 36px;
+            }
+
+            .stone-white {
+                top: 36px;
+                right: 36px;
+            }
+
+            .brand-name {
+                font-size: 28px;
+            }
+
+            .brand-name-zh {
+                font-size: 44px;
+            }
+
+            .tagline {
+                font-size: 20px;
+            }
+
+            .sub-tagline {
+                font-size: 16px;
+            }
+
+            .cta-button {
+                padding: 16px 50px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 步骤1: 欢迎页 -->
+    <div id="step-welcome" class="onboarding-step welcome-page active">
+        <div class="logo-container">
+            <div class="logo-circle">
+                <div class="stone stone-black"></div>
+                <div class="stone stone-white"></div>
+            </div>
+            <div class="brand-name">YiGo</div>
+        </div>
+        
+        <div class="brand-name-zh">弈Go</div>
+        <div class="tagline">你的围棋成长伙伴</div>
+        <div class="sub-tagline">不是教你下棋</div>
+        <div class="sub-tagline">而是陪你成为棋手</div>
+        
+        <button class="cta-button" onclick="goToStep(2)">开始旅程</button>
+        
+        <div class="login-link" onclick="alert('登录功能即将上线')">已有账号？登录</div>
+        
+        <div class="language-hint">支持 中文 | 日本語 | 한국어</div>
+    </div>
+
+    <!-- 步骤2: AI伙伴选择页 -->
+    <div id="step-companion" class="onboarding-step companion-page">
+        <button class="back-button" onclick="goToStep(1)">
+            <span>&larr;</span> 返回
+        </button>
+        
+        <div class="page-header">
+            <h1 class="page-title">选择你的围棋伙伴</h1>
+            <p class="page-subtitle">TA 将陪你一起成长，随时可以更换</p>
+        </div>
+        
+        <div class="companion-cards">
+            <!-- 阿呆 -->
+            <div class="companion-card" data-companion="adai" onclick="selectCompanion('adai')">
+                <div class="companion-header">
+                    <div class="companion-avatar">🐼</div>
+                    <div class="companion-info">
+                        <h3>阿呆</h3>
+                        <div class="companion-type">温和型 · 耐心鼓励</div>
+                    </div>
+                </div>
+                <div class="companion-quote">"没关系没关系，我刚开始学的时候也这样"</div>
+                <div class="companion-suitable">适合: 刚入门、需要鼓励的孩子</div>
+            </div>
+            
+            <!-- 小智 -->
+            <div class="companion-card" data-companion="xiaozhi" onclick="selectCompanion('xiaozhi')">
+                <div class="companion-header">
+                    <div class="companion-avatar">🦊</div>
+                    <div class="companion-info">
+                        <h3>小智</h3>
+                        <div class="companion-type">挑战型 · 机灵好胜</div>
+                    </div>
+                </div>
+                <div class="companion-quote">"嘿嘿，这步棋我在给你挖坑，你敢跳吗？"</div>
+                <div class="companion-suitable">适合: 有一定基础、喜欢挑战的孩子</div>
+            </div>
+            
+            <!-- 悠悠 -->
+            <div class="companion-card" data-companion="youyou" onclick="selectCompanion('youyou')">
+                <div class="companion-header">
+                    <div class="companion-avatar">🐱</div>
+                    <div class="companion-info">
+                        <h3>悠悠</h3>
+                        <div class="companion-type">冷静型 · 睿智寡言</div>
+                    </div>
+                </div>
+                <div class="companion-quote">"善战者，求之于势。"</div>
+                <div class="companion-suitable">适合: 追求深度、喜欢思考的孩子</div>
+            </div>
+        </div>
+        
+        <div class="confirm-wrapper">
+            <button class="confirm-button" id="confirmBtn" disabled onclick="confirmSelection()">选择阿呆作为你的伙伴</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedCompanion = null;
+        const companionNames = {
+            'adai': '阿呆',
+            'xiaozhi': '小智',
+            'youyou': '悠悠'
+        };
+
+        function goToStep(step) {
+            document.querySelectorAll('.onboarding-step').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            if (step === 1) {
+                document.getElementById('step-welcome').classList.add('active');
+            } else if (step === 2) {
+                document.getElementById('step-companion').classList.add('active');
+            }
+        }
+
+        function selectCompanion(companion) {
+            selectedCompanion = companion;
+            
+            // 更新卡片选中状态
+            document.querySelectorAll('.companion-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = document.querySelector(`[data-companion="${companion}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // 更新确认按钮
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = `选择${companionNames[companion]}作为你的伙伴`;
+        }
+
+        function confirmSelection() {
+            if (selectedCompanion) {
+                // 保存到 localStorage
+                localStorage.setItem('selected_companion', selectedCompanion);
+                localStorage.setItem('onboarding_completed', 'true');
+                
+                // 跳转到 Dashboard
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

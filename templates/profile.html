@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 围棋学堂</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .profile-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px 100px;
+        }
+
+        /* 用户信息卡片 */
+        .user-card {
+            background: var(--rice-paper);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .user-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            color: var(--ink-black);
+        }
+
+        .user-level {
+            font-size: 0.95rem;
+            color: var(--mist-gray);
+            margin: 0 0 4px 0;
+        }
+
+        .user-joined {
+            font-size: 0.85rem;
+            color: var(--mist-gray);
+            margin: 0;
+        }
+
+        /* 数据统计卡片 */
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px 8px;
+            background: var(--rice-paper);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--cinnabar-red);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--mist-gray);
+        }
+
+        /* 成就徽章区域 */
+        .achievements-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+            color: var(--ink-black);
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .badge-item {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .badge-item.unlocked {
+            background: linear-gradient(135deg, #f5d76e, var(--gold-foil));
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .badge-item.locked {
+            background: linear-gradient(135deg, #d5d5d5, #b5b5b5);
+            color: var(--mist-gray);
+        }
+
+        .badges-progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--mist-gray);
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 设置区域 */
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .setting-item:first-child {
+            padding-top: 0;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: var(--ink-black);
+        }
+
+        .setting-icon {
+            font-size: 1.4rem;
+        }
+
+        .setting-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--mist-gray);
+        }
+
+        .setting-arrow {
+            font-size: 0.8rem;
+            color: var(--mist-gray);
+        }
+
+        /* 切换开关 */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--cinnabar-red);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .user-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .badges-container {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航 -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">⚪ 围棋学堂</a>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/play">对弈</a>
+                <a href="/tsumego">死活题</a>
+                <a href="/records">棋谱</a>
+                <a href="/profile" class="active">我的</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <div class="profile-page">
+            <!-- 用户信息卡片 -->
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">😊</div>
+                <div class="user-info">
+                    <h2 class="user-name" id="userName">小明</h2>
+                    <p class="user-level" id="userLevel">棋力: 15级 (K级)</p>
+                    <p class="user-joined" id="userJoined">加入 YiGo 第 12 天</p>
+                </div>
+            </div>
+
+            <!-- 数据统计卡片 -->
+            <div class="stats-card">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalGames">48</div>
+                        <div class="stat-label">总对弈数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="winRate">52%</div>
+                        <div class="stat-label">总胜率</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="winStreak">7</div>
+                        <div class="stat-label">最长连胜</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="studyTime">8.5h</div>
+                        <div class="stat-label">总学习时长</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就徽章区域 -->
+            <div class="achievements-card">
+                <h3 class="card-title">🏆 成就徽章</h3>
+                <div class="badges-container" id="badgesContainer">
+                    <div class="badge-item unlocked" title="初出茅庐">初</div>
+                    <div class="badge-item unlocked" title="首战告捷">吃</div>
+                    <div class="badge-item locked" title="未解锁">?</div>
+                    <div class="badge-item locked" title="未解锁">?</div>
+                    <div class="badge-item locked" title="未解锁">?</div>
+                    <div class="badge-item locked" title="未解锁">?</div>
+                </div>
+                <div class="badges-progress" id="badgesProgress">已解锁 12/30</div>
+            </div>
+
+            <!-- 设置区域 -->
+            <div class="settings-card">
+                <div class="settings-list">
+                    <div class="setting-item" onclick="showCompanionPicker()">
+                        <div class="setting-label">
+                            <span class="setting-icon">🤖</span>
+                            <span>更换 AI 伙伴</span>
+                        </div>
+                        <div class="setting-value">
+                            <span id="currentCompanion">阿呆</span>
+                            <span class="setting-arrow">›</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <span class="setting-icon">🔊</span>
+                            <span>语音设置</span>
+                        </div>
+                        <div class="setting-value">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="voiceToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item" onclick="showReminderPicker()">
+                        <div class="setting-label">
+                            <span class="setting-icon">⏰</span>
+                            <span>每日提醒</span>
+                        </div>
+                        <div class="setting-value">
+                            <span id="reminderTime">19:00</span>
+                            <span class="setting-arrow">›</span>
+                        </div>
+                    </div>
+                    <div class="setting-item" onclick="showLanguagePicker()">
+                        <div class="setting-label">
+                            <span class="setting-icon">🌐</span>
+                            <span>语言</span>
+                        </div>
+                        <div class="setting-value">
+                            <span id="currentLanguage">中文</span>
+                            <span class="setting-arrow">›</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="icon">🏠</span>
+            <span>首页</span>
+        </a>
+        <a href="/play" class="nav-item">
+            <span class="icon">🎮</span>
+            <span>对弈</span>
+        </a>
+        <a href="/tsumego" class="nav-item">
+            <span class="icon">🎯</span>
+            <span>死活题</span>
+        </a>
+        <a href="/records" class="nav-item">
+            <span class="icon">📖</span>
+            <span>棋谱</span>
+        </a>
+        <a href="/profile" class="nav-item active">
+            <span class="icon">👤</span>
+            <span>我的</span>
+        </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AI 伙伴数据
+        const AI_COMPANIONS = {
+            adai: { name: '阿呆', emoji: '🐼' },
+            xiaozhi: { name: '小智', emoji: '🦊' },
+            youyou: { name: '悠悠', emoji: '🐱' }
+        };
+
+        // 默认示例数据
+        const DEFAULT_PROFILE = {
+            userName: '小明',
+            userLevel: '15级 (K级)',
+            daysJoined: 12,
+            totalGames: 48,
+            winRate: 52,
+            winStreak: 7,
+            studyTime: 8.5,
+            unlockedBadges: ['初', '吃'],
+            totalBadges: 30,
+            companion: 'adai',
+            voiceEnabled: true,
+            reminderTime: '19:00',
+            language: '中文'
+        };
+
+        // 加载用户数据
+        function loadProfileData() {
+            const saved = localStorage.getItem('user_profile');
+            if (saved) {
+                return { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
+            }
+            return DEFAULT_PROFILE;
+        }
+
+        // 保存用户数据
+        function saveProfileData(data) {
+            localStorage.setItem('user_profile', JSON.stringify(data));
+        }
+
+        // 初始化页面
+        function initProfile() {
+            const profile = loadProfileData();
+
+            // 更新用户信息
+            document.getElementById('userName').textContent = profile.userName;
+            document.getElementById('userLevel').textContent = `棋力: ${profile.userLevel}`;
+            document.getElementById('userJoined').textContent = `加入 YiGo 第 ${profile.daysJoined} 天`;
+            document.getElementById('userAvatar').textContent = AI_COMPANIONS[profile.companion]?.emoji || '😊';
+
+            // 更新统计数据
+            document.getElementById('totalGames').textContent = profile.totalGames;
+            document.getElementById('winRate').textContent = profile.winRate + '%';
+            document.getElementById('winStreak').textContent = profile.winStreak;
+            document.getElementById('studyTime').textContent = profile.studyTime + 'h';
+
+            // 更新成就徽章
+            renderBadges(profile.unlockedBadges, profile.totalBadges);
+
+            // 更新设置
+            document.getElementById('currentCompanion').textContent = AI_COMPANIONS[profile.companion]?.name || '阿呆';
+            document.getElementById('voiceToggle').checked = profile.voiceEnabled;
+            document.getElementById('reminderTime').textContent = profile.reminderTime;
+            document.getElementById('currentLanguage').textContent = profile.language;
+
+            // 语音设置切换
+            document.getElementById('voiceToggle').addEventListener('change', function(e) {
+                const profile = loadProfileData();
+                profile.voiceEnabled = e.target.checked;
+                saveProfileData(profile);
+            });
+        }
+
+        // 渲染徽章
+        function renderBadges(unlocked, total) {
+            const container = document.getElementById('badgesContainer');
+            let html = '';
+
+            // 已解锁的徽章
+            unlocked.forEach(badge => {
+                html += `<div class="badge-item unlocked" title="${badge}">${badge}</div>`;
+            });
+
+            // 未解锁的徽章 (最多显示到 6 个)
+            const lockedCount = Math.min(total - unlocked.length, 6 - unlocked.length);
+            for (let i = 0; i < lockedCount; i++) {
+                html += `<div class="badge-item locked" title="未解锁">?</div>`;
+            }
+
+            container.innerHTML = html;
+            document.getElementById('badgesProgress').textContent = `已解锁 ${unlocked.length}/${total}`;
+        }
+
+        // 显示 AI 伙伴选择器
+        function showCompanionPicker() {
+            const profile = loadProfileData();
+            const companions = Object.entries(AI_COMPANIONS).map(([key, val]) => {
+                const checked = key === profile.companion ? 'checked' : '';
+                return `<label style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;">
+                    <input type="radio" name="companion" value="${key}" ${checked}>
+                    <span style="font-size:1.5rem;">${val.emoji}</span>
+                    <span>${val.name}</span>
+                </label>`;
+            }).join('');
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = `<div style="background:white;border-radius:16px;padding:24px;width:300px;max-width:90%;">
+                <h4 style="margin:0 0 16px 0;text-align:center;">选择 AI 伙伴</h4>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+                    ${companions}
+                </div>
+                <button onclick="this.closest('div[id^=modal]').remove()" style="width:100%;padding:12px;background:var(--cinnabar-red);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>
+            </div>`;
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+            document.body.appendChild(modal);
+
+            // 监听选择变化
+            modal.querySelectorAll('input[name="companion"]').forEach(input => {
+                input.addEventListener('change', function(e) {
+                    const profile = loadProfileData();
+                    profile.companion = e.target.value;
+                    saveProfileData(profile);
+                    document.getElementById('currentCompanion').textContent = AI_COMPANIONS[e.target.value].name;
+                    document.getElementById('userAvatar').textContent = AI_COMPANIONS[e.target.value].emoji;
+                    modal.remove();
+                });
+            });
+        }
+
+        // 显示每日提醒选择器
+        function showReminderPicker() {
+            const profile = loadProfileData();
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = `<div style="background:white;border-radius:16px;padding:24px;width:300px;max-width:90%;">
+                <h4 style="margin:0 0 16px 0;text-align:center;">设置每日提醒</h4>
+                <input type="time" id="reminderInput" value="${profile.reminderTime}" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:1rem;margin-bottom:16px;">
+                <div style="display:flex;gap:12px;">
+                    <button onclick="this.closest('div[id^=modal]').remove()" style="flex:1;padding:12px;border:2px solid #ddd;background:white;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>
+                    <button onclick="saveReminder()" style="flex:1;padding:12px;background:var(--cinnabar-red);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">确定</button>
+                </div>
+            </div>`;
+            document.body.appendChild(modal);
+
+            window.saveReminder = function() {
+                const time = document.getElementById('reminderInput').value;
+                const profile = loadProfileData();
+                profile.reminderTime = time;
+                saveProfileData(profile);
+                document.getElementById('reminderTime').textContent = time;
+                modal.remove();
+            };
+        }
+
+        // 显示语言选择器
+        function showLanguagePicker() {
+            const profile = loadProfileData();
+            const languages = ['中文', 'English', '日本語', '한국어'];
+            const currentLang = profile.language || '中文';
+
+            const langOptions = languages.map(lang => {
+                const checked = lang === currentLang ? 'checked' : '';
+                return `<label style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;">
+                    <input type="radio" name="language" value="${lang}" ${checked}>
+                    <span>${lang}</span>
+                </label>`;
+            }).join('');
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = `<div style="background:white;border-radius:16px;padding:24px;width:300px;max-width:90%;">
+                <h4 style="margin:0 0 16px 0;text-align:center;">选择语言</h4>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+                    ${langOptions}
+                </div>
+                <button onclick="this.closest('div[id^=modal]').remove()" style="width:100%;padding:12px;background:var(--cinnabar-red);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>
+            </div>`;
+            document.body.appendChild(modal);
+
+            modal.querySelectorAll('input[name="language"]').forEach(input => {
+                input.addEventListener('change', function(e) {
+                    const profile = loadProfileData();
+                    profile.language = e.target.value;
+                    saveProfileData(profile);
+                    document.getElementById('currentLanguage').textContent = e.target.value;
+                    modal.remove();
+                });
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initProfile);
+    </script>
+</body>
+</html>

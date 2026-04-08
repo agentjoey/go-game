@@ -25,6 +25,11 @@ def load_tutorial_data():
     with open(data_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
+@app.route('/onboarding')
+def onboarding():
+    """新用户引导页"""
+    return render_template('onboarding.html')
+
 @app.route('/')
 def index():
     """首页 - Dashboard"""
@@ -59,6 +64,11 @@ def records():
 def review():
     """对局复盘"""
     return render_template('review.html')
+
+@app.route('/profile')
+def profile():
+    """个人中心"""
+    return render_template('profile.html')
 
 @app.route('/api/tsumego/list')
 def api_tsumego_list():

@@ -886,6 +886,31 @@ function updateCompanionUI() {
     if (nameEl) nameEl.textContent = companion.name;
 }
 
+// ==================== 手数显示切换 ====================
+
+let moveNumbersVisible = false;
+
+function toggleMoveNumbers() {
+    if (!game || !game.boardView) return;
+    
+    moveNumbersVisible = !moveNumbersVisible;
+    game.boardView.setShowMoveNumbers(moveNumbersVisible);
+    
+    // 更新按钮样式
+    const btn = document.getElementById('moveNumbersBtn');
+    if (btn) {
+        if (moveNumbersVisible) {
+            btn.classList.add('active');
+            btn.style.backgroundColor = '#e3f2fd';
+            btn.style.borderColor = '#2196f3';
+        } else {
+            btn.classList.remove('active');
+            btn.style.backgroundColor = '';
+            btn.style.borderColor = '';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initGame, 200);
 });

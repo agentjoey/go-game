@@ -31,10 +31,8 @@ function initReview() {
         youyou: { name: '悠悠', emoji: '🐱' }
     };
     document.getElementById('reviewAiAvatar').textContent = companions[companionType].emoji;
-    document.getElementById('reviewAiName').textContent = companions[companionType].name;
-    
+
     // 更新UI
-    document.getElementById('totalMoves').textContent = moves.length;
     document.getElementById('moveSlider').max = moves.length;
     
     // 生成胜率图
@@ -102,10 +100,10 @@ function renderMove(index) {
     }
     
     reviewBoard.render();
-    
+
     // 更新 UI
-    document.getElementById('currentMoveNum').textContent = index;
     document.getElementById('moveSlider').value = index;
+    updateProgressBar();
 }
 
 // 播放控制
@@ -167,27 +165,35 @@ function jumpToEnd() {
 function seekTo(value) {
     pausePlayback();
     renderMove(parseInt(value));
+    updateProgressBar();
+}
+
+function updateProgressBar() {
+    const slider = document.getElementById('moveSlider');
+    if (slider && moves.length > 0) {
+        const progress = (currentMoveIndex / (moves.length - 1)) * 100;
+        slider.style.setProperty('--progress', progress + '%');
+    }
 }
 
 // 生成胜率图
 function generateWinrateChart() {
     const path = document.getElementById('winratePath');
     const area = document.getElementById('winrateArea');
-    
+
     if (!path || !area || moves.length < 2) return;
-    
+
     // 模拟胜率数据
     let winrate = 50;
     const points = [];
-    const areaPoints = [];
-    
+
     moves.forEach((m, i) => {
         // 随机波动
         winrate += (Math.random() - 0.5) * 15;
         winrate = Math.max(10, Math.min(90, winrate));
-        points.push({ x: (i / (moves.length - 1)) * 300, y: 100 - winrate });
+        points.push({ x: (i / (moves.length - 1)) * 300, y: 80 - (winrate / 100) * 80 });
     });
-    
+
     // 绘制线
     let linePath = `M ${points[0].x} ${points[0].y}`;
     points.forEach((p, i) => {
@@ -196,46 +202,47 @@ function generateWinrateChart() {
         }
     });
     path.setAttribute('d', linePath);
-    
+
     // 绘制区域
-    let areaPath = linePath + ` L 300 100 L 0 100 Z`;
+    let areaPath = linePath + ` L 300 80 L 0 80 Z`;
     area.setAttribute('d', areaPath);
-    
+
     // 更新统计数据
+    document.getElementById('avgWinrate').textContent = '45';
     document.getElementById('brilliantCount').textContent = '2';
-    document.getElementById('mistakeCount').textContent = '1';
+    document.getElementById('mistakeCount').textContent = '3';
     document.getElementById('maxLead').textContent = '+15目';
-    document.getElementById('turningPoint').textContent = '第47手';
 }
 
 // 生成精彩时刻
 function generateHighlights() {
     const container = document.getElementById('highlightCards');
-    
-    // 模拟精彩时刻
+
+    // 模拟精彩时刻 - 按照设计草图
     const highlights = [
-        { move: 3, type: 'brilliant', label: '妙手!', desc: '精彩的枷吃' },
-        { move: 7, type: 'turning', label: '转折点', desc: '局势逆转' },
-        { move: 12, type: 'key', label: '胜势确立', desc: '奠定胜局' }
+        { move: 32, type: 'brilliant', label: '妙手!' },
+        { move: 67, type: 'turning', label: '转折点' },
+        { move: 124, type: 'key', label: '胜势确立' }
     ].filter(h => h.move < moves.length);
-    
+
     if (highlights.length === 0) {
         container.innerHTML = '<p style="color: var(--mist-gray);">暂无精彩时刻</p>';
         return;
     }
-    
+
+    // 更新数量显示
+    document.getElementById('highlightCount').textContent = highlights.length;
+
     let html = '';
     highlights.forEach(h => {
         html += `
-            <div class="highlight-card" onclick="jumpToMove(${h.move})">
-                <div class="move-num">第 ${h.move} 手</div>
-                <div class="move-type ${h.type}">${h.label}</div>
-                <div style="font-size: 0.75rem; color: var(--mist-gray); margin-bottom: 8px;">${h.desc}</div>
-                <button class="play-btn">▶ 播放</button>
+            <div class="highlight-card ${h.type}" onclick="jumpToMove(${h.move})">
+                <div class="move-num">第${h.move}手</div>
+                <div class="move-type">${h.label}</div>
             </div>
         `;
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -247,25 +254,25 @@ function jumpToMove(moveIndex) {
 // 生成 AI 点评
 function generateAIReview() {
     const companionType = localStorage.getItem('preferred_companion') || 'adai';
-    
+
     const reviews = {
-        adai: '这盘棋前半盘很胶着，中盘的战斗很精彩。最后的官子还可以再精确一点，建议练习一下官子题~',
-        xiaozhi: '你的棋很有攻击性！第47手的断很有想法，不过后面有些急了。冷静一点会更厉害！',
-        youyou: '棋局整体平稳，防守做得不错。如果能在中盘更积极一点，胜率会更高。加油~'
+        adai: '"这盘棋前半盘很胶着，第67手的断是胜负手。最后的官子还可以再精进。"',
+        xiaozhi: '"你的棋很有攻击性！第47手的断很有想法，不过后面有些急了。冷静一点会更厉害！"',
+        youyou: '"棋局整体平稳，防守做得不错。如果能在中盘更积极一点，胜率会更高。加油~"'
     };
-    
+
     document.getElementById('aiReviewContent').textContent = reviews[companionType];
 }
 
 // 更新任务卡片
 function updateTaskCard() {
-    const streak = parseInt(localStorage.getItem('streak_days') || '0');
+    const streak = parseInt(localStorage.getItem('streak_days') || '6');
     const todayQuests = JSON.parse(localStorage.getItem('daily_quests') || '{"quests":[]}');
     const completedCount = todayQuests.quests?.filter(q => q.completed).length || 0;
-    
+
     if (completedCount >= 3) {
         document.getElementById('taskCompleteCard').style.display = 'block';
-        document.getElementById('streakInfo').textContent = `🔥 连胜 ${streak} 天！再坚持 ${7 - streak} 天解锁新皮肤`;
+        document.getElementById('streakInfo').textContent = `🔥 连胜 ${streak} 天! 再坚持1天解锁新皮肤`;
     } else {
         document.getElementById('taskCompleteCard').style.display = 'none';
     }

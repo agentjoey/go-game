@@ -19,11 +19,31 @@
             align-items: center;
             margin-bottom: 24px;
         }
-        
-        .review-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
+
+        .back-btn {
+            font-size: 1rem;
+            color: var(--ink-black);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            color: var(--cinnabar-red);
+        }
+
+        .share-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid var(--ink-black);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .share-btn:hover {
+            background: var(--ink-black);
+            color: white;
         }
         
         .review-layout {
@@ -45,6 +65,21 @@
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
+
+        .review-board-wrapper {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: #8d6e63;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .review-board-wrapper .go-board {
+            background: #e8dfc8;
+            border-radius: 4px;
+        }
         
         .review-board-wrapper {
             width: 100%;
@@ -57,124 +92,140 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
+            gap: 12px;
             margin: 20px 0;
         }
         
         .playback-controls button {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid var(--cinnabar-red);
             background: white;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .playback-controls button:hover {
             background: var(--cinnabar-red);
             color: white;
         }
-        
-        .playback-controls button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .playback-slider {
+
+        .progress-bar {
             flex: 1;
             max-width: 400px;
         }
-        
-        .playback-slider input[type="range"] {
+
+        .progress-bar input[type="range"] {
             width: 100%;
             height: 8px;
             -webkit-appearance: none;
-            background: #e0e0e0;
+            background: linear-gradient(to right, var(--cinnabar-red) 0%, var(--cinnabar-red) var(--progress, 0%), #e0e0e0 var(--progress, 0%), #e0e0e0 100%);
             border-radius: 4px;
             outline: none;
         }
-        
-        .playback-slider input[type="range"]::-webkit-slider-thumb {
+
+        .progress-bar input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--cinnabar-red);
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(196,92,72,0.3);
         }
-        
-        .move-counter {
-            font-weight: 600;
+
+        .move-marks {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2px;
+            margin-top: 4px;
+            font-size: 0.7rem;
             color: var(--mist-gray);
-            min-width: 80px;
-            text-align: center;
         }
         
         /* 精彩时刻 */
         .highlights-section {
             margin-top: 24px;
         }
-        
+
+        .highlights-card {
+            background: #fff8e1;
+            border: 2px solid #c9a227;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
         .highlights-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #c9a227;
         }
-        
+
         .highlight-cards {
             display: flex;
             gap: 12px;
             overflow-x: auto;
             padding-bottom: 8px;
         }
-        
+
         .highlight-card {
             flex: 0 0 auto;
-            width: 140px;
-            background: var(--rice-paper);
-            border-radius: 12px;
-            padding: 12px;
+            width: 100px;
+            border-radius: 10px;
+            padding: 10px;
             cursor: pointer;
             transition: all 0.2s;
-            border: 2px solid transparent;
+            border: 2px solid;
+            text-align: center;
         }
-        
+
+        .highlight-card.brilliant {
+            background: #e8f5e9;
+            border-color: #6b8e6b;
+        }
+
+        .highlight-card.turning {
+            background: #e3f2fd;
+            border-color: #5a7a9c;
+        }
+
+        .highlight-card.key {
+            background: #ffebee;
+            border-color: #c45c48;
+        }
+
         .highlight-card:hover {
-            border-color: var(--cinnabar-red);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
+
         .highlight-card .move-num {
             font-size: 0.75rem;
-            color: var(--mist-gray);
-            margin-bottom: 4px;
-        }
-        
-        .highlight-card .move-type {
-            font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 4px;
         }
-        
-        .highlight-card .move-type.brilliant { color: var(--bamboo-green); }
-        .highlight-card .move-type.turning { color: var(--cinnabar-red); }
-        .highlight-card .move-type.key { color: #d4a03d; }
-        
-        .highlight-card .play-btn {
-            width: 100%;
-            padding: 6px;
-            background: var(--cinnabar-red);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
+
+        .highlight-card.brilliant .move-num { color: #6b8e6b; }
+        .highlight-card.turning .move-num { color: #5a7a9c; }
+        .highlight-card.key .move-num { color: #c45c48; }
+
+        .highlight-card .move-type {
+            font-size: 0.85rem;
+            font-weight: 600;
         }
+
+        .highlight-card.brilliant .move-type { color: #6b8e6b; }
+        .highlight-card.turning .move-type { color: #5a7a9c; }
+        .highlight-card.key .move-type { color: #c45c48; }
         
         /* 右侧面板 */
         .review-sidebar {
@@ -193,18 +244,19 @@
         .stats-card h3 {
             font-size: 1rem;
             font-weight: 700;
-            margin: 0 0 16px 0;
+            margin: 0 0 12px 0;
         }
-        
+
         /* 胜率图表 */
         .winrate-chart {
-            height: 120px;
+            height: 80px;
             background: linear-gradient(180deg, rgba(90,122,156,0.1) 0%, transparent 100%);
             border-radius: 8px;
             position: relative;
             overflow: hidden;
+            margin-bottom: 12px;
         }
-        
+
         .winrate-line {
             position: absolute;
             bottom: 0;
@@ -212,53 +264,59 @@
             right: 0;
             height: 100%;
         }
-        
+
         .winrate-svg {
             width: 100%;
             height: 100%;
         }
-        
+
+        .winrate-text {
+            font-size: 0.85rem;
+            color: var(--mist-gray);
+            margin-bottom: 8px;
+        }
+
         /* 统计数据 */
         .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.85rem;
         }
-        
-        .stat-box {
-            background: var(--rice-paper);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
-        
-        .stat-box .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--cinnabar-red);
-        }
-        
-        .stat-box .label {
-            font-size: 0.8rem;
+
+        .stat-item .label {
             color: var(--mist-gray);
         }
+
+        .stat-item .value {
+            font-weight: 700;
+            color: var(--ink-black);
+        }
+
+        .stat-item .value.green { color: var(--bamboo-green); }
+        .stat-item .value.red { color: var(--cinnabar-red); }
         
         /* AI 点评 */
         .ai-review {
             background: white;
             border-radius: 16px;
-            padding: 20px;
+            padding: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-        
+
         .ai-review-header {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 12px;
         }
-        
+
         .ai-review-avatar {
             width: 40px;
             height: 40px;
@@ -267,33 +325,48 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
-        
+
+        .ai-review-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
         .ai-review-content {
             background: var(--rice-paper);
             border-radius: 12px;
-            padding: 16px;
+            padding: 14px;
             line-height: 1.6;
+            font-size: 0.9rem;
+            color: var(--mist-gray);
         }
         
         /* 完成任务 */
         .task-complete-card {
-            background: linear-gradient(135deg, #ff9a56, #ff6b6b);
-            border-radius: 16px;
-            padding: 20px;
-            color: white;
-            box-shadow: 0 4px 20px rgba(255,107,107,0.3);
+            background: #e8f5e9;
+            border: 2px solid #6b8e6b;
+            border-radius: 12px;
+            padding: 16px;
         }
-        
+
         .task-complete-card h3 {
-            margin: 0 0 8px 0;
-            font-size: 1.1rem;
+            margin: 0 0 4px 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #6b8e6b;
         }
-        
+
         .task-complete-card .streak-info {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 0.85rem;
+            color: var(--cinnabar-red);
+        }
+
+        .task-complete-card .exp-badge {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #6b8e6b;
+            margin: 4px 0;
         }
         
         /* 操作按钮 */
@@ -324,10 +397,8 @@
     
     <main class="review-page">
         <div class="review-header">
-            <h1>📝 对局复盘</h1>
-            <div>
-                <button class="btn btn-outline-secondary btn-sm" onclick="shareReview()">📤 分享</button>
-            </div>
+            <a href="/" class="back-btn">← 对局复盘</a>
+            <button class="share-btn" onclick="shareReview()">分享 📤</button>
         </div>
         
         <div class="review-layout">
@@ -339,23 +410,29 @@
                 
                 <!-- 播放控制 -->
                 <div class="playback-controls">
-                    <button onclick="jumpToStart()" title="开头">⏮</button>
+                    <button onclick="jumpToStart()" title="开头">◄◄</button>
                     <button onclick="stepBack()" title="上一步">◀</button>
+                    <div class="progress-bar">
+                        <input type="range" id="moveSlider" min="0" max="0" value="0" oninput="seekTo(this.value)">
+                        <div class="move-marks">
+                            <span>1</span>
+                            <span>25</span>
+                            <span>47</span>
+                            <span>120</span>
+                            <span>186</span>
+                        </div>
+                    </div>
                     <button onclick="togglePlayback()" id="playBtn" title="播放/暂停">▶</button>
-                    <button onclick="stepForward()" title="下一步">▶</button>
-                    <button onclick="jumpToEnd()" title="结尾">⏭</button>
-                    <span class="move-counter"><span id="currentMoveNum">0</span> / <span id="totalMoves">0</span></span>
-                </div>
-                
-                <div class="playback-slider">
-                    <input type="range" id="moveSlider" min="0" max="0" value="0" oninput="seekTo(this.value)">
+                    <button onclick="jumpToEnd()" title="结尾">►►</button>
                 </div>
                 
                 <!-- 精彩时刻 -->
                 <div class="highlights-section">
-                    <div class="highlights-title">🎬 精彩时刻</div>
-                    <div class="highlight-cards" id="highlightCards">
-                        <!-- JS 渲染 -->
+                    <div class="highlights-card">
+                        <div class="highlights-title">🎬 精彩时刻 (<span id="highlightCount">3</span>个)</div>
+                        <div class="highlight-cards" id="highlightCards">
+                            <!-- JS 渲染 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -367,7 +444,7 @@
                     <h3>📊 本局数据</h3>
                     <div class="winrate-chart">
                         <div class="winrate-line">
-                            <svg class="winrate-svg" viewBox="0 0 300 100" preserveAspectRatio="none">
+                            <svg class="winrate-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
                                 <defs>
                                     <linearGradient id="winrateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                                         <stop offset="0%" style="stop-color:#5a7a9c;stop-opacity:0.3" />
@@ -379,22 +456,22 @@
                             </svg>
                         </div>
                     </div>
+                    <div class="winrate-text">胜率变化: ████░░░░░░ 平均<span id="avgWinrate">45</span>%</div>
                     <div class="stats-grid">
-                        <div class="stat-box">
-                            <div class="value" id="brilliantCount">0</div>
-                            <div class="label">妙手</div>
+                        <div class="stat-item">
+                            <span class="label">妙手:</span>
+                            <span class="value green" id="brilliantCount">2</span>
+                            <span class="label">次</span>
                         </div>
-                        <div class="stat-box">
-                            <div class="value" id="mistakeCount">0</div>
-                            <div class="label">失误</div>
+                        <div class="stat-item">
+                            <span class="label">失误:</span>
+                            <span class="value red" id="mistakeCount">3</span>
+                            <span class="label">次</span>
                         </div>
-                        <div class="stat-box">
-                            <div class="value" id="maxLead">0</div>
-                            <div class="label">最大领先</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="value" id="turningPoint">-</div>
-                            <div class="label">转折点</div>
+                        <div class="stat-item" style="width: 100%;">
+                            <span class="label">最大领先:</span>
+                            <span class="value green" id="maxLead">+15目</span>
+                            <span class="label" id="maxLeadMove">(第89手)</span>
                         </div>
                     </div>
                 </div>
@@ -404,20 +481,18 @@
                     <div class="ai-review-header">
                         <div class="ai-review-avatar" id="reviewAiAvatar">🐼</div>
                         <div>
-                            <div id="reviewAiName">阿呆</div>
-                            <div style="font-size: 0.8rem; color: var(--mist-gray);">AI 点评</div>
+                            <div class="ai-review-title">💬 AI 点评</div>
                         </div>
                     </div>
                     <div class="ai-review-content" id="aiReviewContent">
-                        这盘棋前半盘很胶着，第67手的断是胜负手。最后的官子还可以再精确一点，建议练习一下官子题~
+                        "这盘棋前半盘很胶着，第67手的断是胜负手。最后的官子还可以再精进。"
                     </div>
                 </div>
                 
                 <!-- 任务完成 -->
                 <div class="task-complete-card" id="taskCompleteCard">
-                    <h3>🎯 今日任务完成!</h3>
-                    <div style="font-size: 1.5rem; font-weight: 700; margin: 8px 0;">+50 经验</div>
-                    <div class="streak-info" id="streakInfo">🔥 连胜 6 天！再坚持1天解锁新皮肤</div>
+                    <h3>🎯 今日任务完成! +50经验</h3>
+                    <div class="streak-info" id="streakInfo">🔥 连胜 6 天! 再坚持1天解锁新皮肤</div>
                 </div>
                 
                 <!-- 操作按钮 -->
