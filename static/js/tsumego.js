@@ -1,14 +1,21 @@
 /**
- * 死活题练习 - Phase 1 版
+ * 死活题练习 - Phase 1 修复版
+ * 集成 AI Coach 系统
  */
 
 let puzzles = [];
 let currentPuzzle = null;
-let hintsRemaining = 3;
-let stats = { completed: 0, correct: 0, streak: 0 };
+let stats = { completed: 0, correct: 0, streak: 0, totalAttempts: 0 };
+let tsumegoCoach = null;
 let puzzleBoard = null;
+let companion = null;
 
 async function initTsumego() {
+    // 初始化 AI 棋伴
+    const companionType = localStorage.getItem('preferred_companion') || 'adai';
+    companion = new AICompanion(companionType);
+    tsumegoCoach = new TsumegoCoach(companion);
+    
     // 初始化棋盘
     puzzleBoard = new GoBoard('tsumego-board', 9);
     puzzleBoard.addClickListener(handlePuzzleClick);
@@ -22,14 +29,26 @@ async function initTsumego() {
     // 绑定筛选事件
     document.getElementById('puzzleType')?.addEventListener('change', renderPuzzleList);
     document.getElementById('puzzleDifficulty')?.addEventListener('change', renderPuzzleList);
+    
+    // 显示欢迎语
+    showWelcomeMessage();
+}
+
+function showWelcomeMessage() {
+    const bubbleEl = document.getElementById('ai-bubble');
+    if (bubbleEl) {
+        bubbleEl.innerHTML = `<span class="emoji">${companion.emoji}</span> ${companion.getGreetingMessage()}`;
+        bubbleEl.className = 'ai-bubble show';
+        setTimeout(() => bubbleEl.classList.remove('show'), 3000);
+    }
 }
 
 async function loadPuzzles() {
-    // 内置题目
     puzzles = [
+        // 入门级 - 吃子
         {
             id: 1, title: '角上吃子', type: 'kill', difficulty: 'easy',
-            description: '黑先吃白，一步即可',
+            description: '黑先，吃掉白棋',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
@@ -41,10 +60,46 @@ async function loadPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[3,3]]
+            solution: [[3,3]],
+            hint: '攻击白棋的气'
         },
         {
-            id: 2, title: '做活', type: 'live', difficulty: 'easy',
+            id: 2, title: '门吃', type: 'kill', difficulty: 'easy',
+            description: '黑先，一步吃子',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,2,2,0,0,0,0],
+                [0,0,0,2,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[4,3]],
+            hint: '紧气'
+        },
+        {
+            id: 3, title: '枷吃', type: 'kill', difficulty: 'easy',
+            description: '黑先，枷吃白棋',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,2,0,0,0,0,0],
+                [0,0,0,0,2,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[4,3]],
+            hint: '拦住逃跑路线'
+        },
+        // 入门级 - 做活
+        {
+            id: 4, title: '做出两眼', type: 'live', difficulty: 'easy',
             description: '黑先，做出两只眼',
             board: [
                 [0,0,0,0,0,0,0,0,0],
@@ -57,26 +112,46 @@ async function loadPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,4]]
+            solution: [[4,4]],
+            hint: '在中间落子'
         },
         {
-            id: 3, title: '紧气', type: 'capture', difficulty: 'easy',
-            description: '黑先，紧气吃白',
+            id: 5, title: '扩大眼位', type: 'live', difficulty: 'easy',
+            description: '黑先，扩大眼位做活',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,2,0,0,0,0],
-                [0,0,0,2,1,2,0,0,0],
-                [0,0,0,0,2,0,0,0,0],
+                [0,0,0,1,1,1,0,0,0],
+                [0,0,0,1,0,1,0,0,0],
+                [0,0,0,1,1,1,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,3]]
+            solution: [[4,4]],
+            hint: '在中间落子'
+        },
+        // 初级 - 对杀
+        {
+            id: 6, title: '紧气', type: 'capture', difficulty: 'medium',
+            description: '黑先，对杀谁先紧气？',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,2,2,0,0,0,0],
+                [0,0,0,2,1,2,0,0,0],
+                [0,0,0,2,1,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[4,3]],
+            hint: '黑棋需要紧气'
         },
         {
-            id: 4, title: '接不归', type: 'kill', difficulty: 'medium',
+            id: 7, title: '接不归', type: 'kill', difficulty: 'medium',
             description: '黑先，让白棋接不归',
             board: [
                 [0,0,0,0,0,0,0,0,0],
@@ -89,23 +164,60 @@ async function loadPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,4], [5,4]]
+            solution: [[4,4], [5,4]],
+            hint: '点击白棋旁边的空格'
         },
         {
-            id: 5, title: '对杀', type: 'capture', difficulty: 'medium',
-            description: '黑先对杀，谁先动手？',
+            id: 8, title: '滚打包收', type: 'capture', difficulty: 'medium',
+            description: '黑先，滚打包收白棋',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
-                [0,0,0,1,1,1,0,0,0],
-                [0,0,0,1,0,2,0,0,0],
-                [0,0,0,1,1,1,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,2,2,2,0,0,0,0],
+                [0,0,2,1,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,4]]
+            solution: [[5,3]],
+            hint: '利用对方的断点'
+        },
+        // 更多题目...
+        {
+            id: 9, title: '倒扑', type: 'kill', difficulty: 'hard',
+            description: '黑先，倒扑吃子',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,2,2,2,0,0,0],
+                [0,0,0,2,1,2,0,0,0],
+                [0,0,0,2,2,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[5,4]],
+            hint: '牺牲一子换取更大收获'
+        },
+        {
+            id: 10, title: '征子', type: 'kill', difficulty: 'hard',
+            description: '黑先，征吃白棋',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,1,0,0,0,0],
+                [0,0,0,0,0,2,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[5,4]],
+            hint: '追着跑'
         }
     ];
     
@@ -152,60 +264,89 @@ function selectPuzzle(id) {
     currentPuzzle = puzzles.find(p => p.id === id);
     if (!currentPuzzle) return;
 
-    hintsRemaining = 3;
-    document.getElementById('hintsLeft').textContent = hintsRemaining;
+    tsumegoCoach.reset();
+    document.getElementById('hintsLeft').textContent = tsumegoCoach.maxHints;
     document.getElementById('puzzleTitle').textContent = `第${id}题: ${currentPuzzle.title}`;
     document.getElementById('puzzleDesc').innerHTML = `<p>${currentPuzzle.description}</p>`;
 
     // 重置棋盘
     puzzleBoard.board = currentPuzzle.board.map(row => [...row]);
     puzzleBoard.render();
-    puzzleBoard.addClickListener(handlePuzzleClick);
+    
+    // 更新AI气泡
+    companion.showBubble('encourage');
 
     renderPuzzleList();
 }
 
 function handlePuzzleClick(row, col) {
     if (!currentPuzzle || !puzzleBoard) return;
+    
+    // 检查是否已落子
+    if (puzzleBoard.board[row][col] !== 0) {
+        showToast('这里已经有棋子了~', 'warning');
+        return;
+    }
 
+    // 检查是否正解
     const isCorrect = currentPuzzle.solution.some(([r, c]) => r === row && c === col);
     
     if (isCorrect) {
-        // 放置棋子
+        // 落子
         puzzleBoard.board[row][col] = 1;
         puzzleBoard.render();
-        
-        showToast('🎉 正确！', 'success');
         
         stats.completed++;
         stats.correct++;
         stats.streak++;
+        stats.totalAttempts++;
         saveStats();
         updateStatsUI();
         
+        // AI 反馈
+        const msg = tsumegoCoach.onCorrect(currentPuzzle);
+        showToast(msg, 'success');
+        companion.showBubble('brilliant');
+        
         setTimeout(nextPuzzle, 1500);
     } else {
-        showToast('再想想...', 'error');
+        // 错误
+        stats.totalAttempts++;
         stats.streak = 0;
         saveStats();
         updateStatsUI();
+        
+        const msg = tsumegoCoach.onWrong();
+        showToast(msg, 'error');
     }
 }
 
 function showHint() {
-    if (!currentPuzzle || hintsRemaining <= 0) return;
+    if (!currentPuzzle || !tsumegoCoach) return;
     
-    hintsRemaining--;
-    document.getElementById('hintsLeft').textContent = hintsRemaining;
+    const hint = tsumegoCoach.getHint(currentPuzzle);
+    document.getElementById('hintsLeft').textContent = tsumegoCoach.maxHints - tsumegoCoach.hintsUsed;
     
-    const sol = currentPuzzle.solution[0];
-    showToast(`提示: 位置 ${String.fromCharCode(65 + sol[1])}${9 - sol[0]}`, 'info');
+    if (hint.coord) {
+        // 标记提示位置
+        puzzleBoard.board[hint.coord[0]][hint.coord[1]] = 3; // 3 = 提示标记
+        puzzleBoard.render();
+        setTimeout(() => {
+            puzzleBoard.board[hint.coord[0]][hint.coord[1]] = 0;
+            puzzleBoard.render();
+        }, 2000);
+    }
+    
+    showToast(hint.text, 'info');
+    companion.showBubble('socratic');
 }
 
 function resetPuzzle() {
-    if (!currentPuzzle) return;
+    if (!currentPuzzle || !puzzleBoard) return;
     puzzleBoard.board = currentPuzzle.board.map(row => [...row]);
     puzzleBoard.render();
+    companion.recordUndo();
+    companion.showBubble('encourage');
 }
 
 function nextPuzzle() {
@@ -217,7 +358,10 @@ function nextPuzzle() {
 
 function loadStats() {
     const saved = localStorage.getItem('tsumego_stats');
-    if (saved) stats = JSON.parse(saved);
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        stats = { ...stats, ...parsed };
+    }
     updateStatsUI();
 }
 
@@ -229,17 +373,28 @@ function updateStatsUI() {
     document.getElementById('completedCount').textContent = stats.completed;
     document.getElementById('correctCount').textContent = stats.correct;
     document.getElementById('streakCount').textContent = stats.streak;
-    const rate = stats.completed > 0 ? Math.round(stats.correct / stats.completed * 100) : 0;
+    const rate = stats.totalAttempts > 0 ? Math.round(stats.correct / stats.totalAttempts * 100) : 0;
     document.getElementById('accuracyRate').textContent = `${rate}%`;
 }
 
 function showToast(msg, type = 'info') {
+    const colors = {
+        success: 'rgba(90, 143, 90, 0.95)',
+        error: 'rgba(196, 92, 72, 0.95)',
+        info: 'rgba(90, 122, 156, 0.95)',
+        warning: 'rgba(212, 160, 61, 0.95)'
+    };
+    
     const t = document.createElement('div');
     t.className = `toast show toast-${type}`;
-    t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;';
+    t.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:${colors[type] || colors.info};color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);`;
     t.textContent = msg;
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2000);
+    setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transition = 'opacity 0.3s';
+        setTimeout(() => t.remove(), 300);
+    }, 2000);
 }
 
 document.addEventListener('DOMContentLoaded', initTsumego);

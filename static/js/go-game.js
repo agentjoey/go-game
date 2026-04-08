@@ -1,5 +1,6 @@
 /**
- * 围棋游戏 - Phase 1 完善版
+ * 围棋游戏 - Phase 1 增强版
+ * 集成 AI Coach 系统
  */
 
 const EMPTY = 0;
@@ -17,6 +18,7 @@ class GoGame {
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
         this.passes = 0;
+        this.undoUsed = false;
         
         // AI 设置
         this.aiEnabled = options.aiEnabled || false;
@@ -27,19 +29,25 @@ class GoGame {
         this.companion = new AICompanion(options.companionType || 'adai');
         
         // 创建棋盘
-        this.boardView = new GoBoard('go-board', options.boardSize || BOARD_SIZE);
+        this.boardSize = options.boardSize || BOARD_SIZE;
+        this.boardView = new GoBoard('go-board', this.boardSize);
         this.boardView.addClickListener((row, col) => {
             this.handleMove(row, col);
         });
         
         this.updateUI();
         this.updateCompanion();
+        
+        // 显示开场白
+        setTimeout(() => {
+            this.companion.showBubble('normal');
+        }, 500);
     }
     
     createEmptyBoard() {
         const b = [];
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            b.push(new Array(BOARD_SIZE).fill(EMPTY));
+        for (let i = 0; i < this.boardSize; i++) {
+            b.push(new Array(this.boardSize).fill(EMPTY));
         }
         return b;
     }
@@ -52,10 +60,9 @@ class GoGame {
         
         const success = this.makeMove(row, col);
         if (success) {
-            // 检查是否触发 AI 反馈
             this.triggerCompanionFeedback(row, col);
             
-            // 如果是 AI 对战，触发 AI 回合
+            // AI 回合
             if (this.aiEnabled && !this.gameOver) {
                 setTimeout(() => this.aiTurn(), 500);
             }
@@ -63,39 +70,23 @@ class GoGame {
     }
     
     makeMove(row, col) {
-        // 验证坐标
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return false;
+        if (row < 0 || row >= this.boardSize || col < 0 || col >= this.boardSize) return false;
         if (this.board[row][col] !== EMPTY) {
             this.showToast('已有棋子');
             return false;
         }
         
-        // 临时落子
-        this.board[row][col] = this.currentPlayer;
-        
-        // 检查自杀（提子后仍无气）
-        const ownGroup = this.getGroup(row, col);
-        const ownLibs = this.getLiberties(ownGroup);
-        
-        // 提子
-        const captured = this.checkCaptures(this.currentPlayer === BLACK ? WHITE : BLACK);
-        
-        // 再次检查是否自杀
-        this.board[row][col] = EMPTY;
-        this.board[row][col] = this.currentPlayer;
-        const afterCapture = this.getGroup(row, col);
-        const afterLibs = this.getLiberties(afterCapture);
-        
-        if (afterLibs.size === 0 && captured.length === 0) {
-            this.board[row][col] = EMPTY;
+        // 检查禁着（自杀）
+        if (this.isSuicide(row, col, this.currentPlayer)) {
             this.showToast('禁着点，不能落子');
             return false;
         }
         
+        // 提子
+        const captured = this.checkCaptures(this.currentPlayer === BLACK ? WHITE : BLACK);
+        
         // 执行落子
-        captured.forEach(([r, c]) => {
-            this.board[r][c] = EMPTY;
-        });
+        this.board[row][col] = this.currentPlayer;
         
         // 更新提子数
         if (this.currentPlayer === BLACK) {
@@ -124,12 +115,33 @@ class GoGame {
         return true;
     }
     
+    isSuicide(row, col, player) {
+        // 临时落子
+        this.board[row][col] = player;
+        
+        // 检查是否能提子
+        const opponent = player === BLACK ? WHITE : BLACK;
+        const captures = this.checkCaptures(opponent);
+        
+        // 检查自己是否有气
+        const ownGroup = this.getGroup(row, col);
+        const ownLibs = this.getLiberties(ownGroup);
+        
+        this.board[row][col] = EMPTY;
+        
+        // 如果能提子，则允许（提子后必有气）
+        if (captures.length > 0) return false;
+        
+        // 如果没提子，则检查自己是否有气
+        return ownLibs.size === 0;
+    }
+    
     checkCaptures(player) {
         const captured = [];
         const checked = new Set();
         
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
+        for (let r = 0; r < this.boardSize; r++) {
+            for (let c = 0; c < this.boardSize; c++) {
                 if (this.board[r][c] === player) {
                     const key = `${r},${c}`;
                     if (!checked.has(key)) {
@@ -169,7 +181,7 @@ class GoGame {
             
             [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr, dc]) => {
                 const nr = r + dr, nc = c + dc;
-                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+                if (nr >= 0 && nr < this.boardSize && nc >= 0 && nc < this.boardSize) {
                     stack.push([nr, nc]);
                 }
             });
@@ -182,7 +194,7 @@ class GoGame {
         group.forEach(([r, c]) => {
             [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr, dc]) => {
                 const nr = r + dr, nc = c + dc;
-                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+                if (nr >= 0 && nr < this.boardSize && nc >= 0 && nc < this.boardSize) {
                     if (this.board[nr][nc] === EMPTY) {
                         libs.add(`${nr},${nc}`);
                     }
@@ -196,7 +208,7 @@ class GoGame {
         if (this.gameOver || this.currentPlayer !== this.aiColor) return;
         
         // 显示思考中
-        this.showCompanionBubble('thinking');
+        this.companion.showBubble('thinking');
         
         setTimeout(() => {
             const ai = new GoAI(this, this.aiDifficulty);
@@ -208,46 +220,52 @@ class GoGame {
             } else {
                 this.pass();
             }
-        }, 1000 + Math.random() * 500);
+        }, 800 + Math.random() * 700);
     }
     
     triggerCompanionFeedback(row, col) {
-        // 简化反馈逻辑
         if (!this.aiEnabled) return;
         
-        // 检查是否被吃子
         const lastMove = this.moves[this.moves.length - 1];
-        if (lastMove && lastMove.captured > 0) {
+        if (!lastMove) return;
+        
+        // 检查是否被吃子
+        if (lastMove.captured > 0) {
             if (lastMove.player === this.aiColor) {
-                this.showCompanionBubble('capture');
+                this.companion.showBubble('capture');
             } else {
-                this.showCompanionBubble('bad');
+                this.companion.showBubble('mistake');
             }
-        } else {
-            // 随机好反馈
-            if (Math.random() > 0.7) {
-                this.showCompanionBubble('good');
-            }
+            return;
+        }
+        
+        // 开局（前10手）特殊反馈
+        if (this.moves.length <= 10) {
+            this.triggerOpeningFeedback(row, col);
+            return;
+        }
+        
+        // 随机正面反馈
+        if (Math.random() > 0.6) {
+            this.companion.showBubble('encourage');
         }
     }
     
-    showCompanionBubble(type) {
-        const msg = this.companion.showMessage(type);
-        const bubbleEl = document.getElementById('ai-bubble');
-        if (bubbleEl) {
-            bubbleEl.innerHTML = `<span class="emoji">${this.companion.emoji}</span> ${msg}`;
-            bubbleEl.className = `ai-bubble show ${type}`;
-            setTimeout(() => {
-                bubbleEl.classList.remove('show');
-            }, 3000);
-        }
-    }
-    
-    updateCompanion() {
-        const emojiEl = document.getElementById('ai-emoji');
-        const nameEl = document.getElementById('ai-name');
-        if (emojiEl) emojiEl.textContent = this.companion.emoji;
-        if (nameEl) nameEl.textContent = this.companion.name;
+    triggerOpeningFeedback(row, col) {
+        // 检测占角
+        const isCorner = (row < 3 || row > this.boardSize - 4) && 
+                        (col < 3 || col > this.boardSize - 4);
+        // 检测天元
+        const center = Math.floor(this.boardSize / 2);
+        const isCenter = Math.abs(row - center) <= 1 && Math.abs(col - center) <= 1;
+        
+        const context = {
+            occupiedCorner: isCorner,
+            centerFirst: isCenter,
+            moveNumber: this.moves.length
+        };
+        
+        this.companion.showBubble('opening');
     }
     
     pass() {
@@ -274,28 +292,81 @@ class GoGame {
         this.gameOver = true;
         const winner = this.currentPlayer === BLACK ? '白' : '黑';
         this.showToast(`${winner}方获胜！`);
-        this.showCompanionBubble(this.currentPlayer === this.aiColor ? 'lose' : 'win');
+        
+        // 更新统计
+        const won = (this.aiEnabled && this.aiColor === WHITE) || (!this.aiEnabled && this.currentPlayer === BLACK);
+        this.companion.recordGameEnd(won);
+        
+        this.companion.showBubble(won ? 'lose' : 'win');
+    }
+    
+    undo() {
+        if (this.moves.length < 2) {
+            this.showToast('没有可以悔的棋');
+            return;
+        }
+        
+        // 移除最后两步（用户+AI）
+        for (let i = 0; i < 2; i++) {
+            const lastMove = this.moves.pop();
+            if (lastMove) {
+                if (lastMove.player === BLACK) {
+                    this.captures[BLACK] -= lastMove.captured;
+                } else {
+                    this.captures[WHITE] -= lastMove.captured;
+                }
+            }
+        }
+        
+        // 重建棋盘
+        this.board = this.createEmptyBoard();
+        this.moves.forEach(m => {
+            if (m.type !== 'pass') {
+                this.board[m.row][m.col] = m.player;
+            }
+        });
+        
+        this.currentPlayer = this.moves.length > 0 ? 
+            (this.moves[this.moves.length - 1].player === BLACK ? WHITE : BLACK) : BLACK;
+        
+        this.boardView.setBoard(this.board);
+        this.updateUI();
+        
+        this.companion.recordUndo();
+        this.companion.showBubble('encourage');
+        this.showToast('已悔棋');
     }
     
     endGame() {
         this.gameOver = true;
-        this.showToast('游戏结束！');
+        this.showToast('游戏结束！双方Pass');
+        
+        // 简单计算胜负
+        const winner = this.currentPlayer === BLACK ? '白' : '黑';
+        const won = (this.aiEnabled && this.aiColor === WHITE) || (!this.aiEnabled && this.currentPlayer === BLACK);
+        this.companion.recordGameEnd(won);
+        this.companion.showBubble(won ? 'lose' : 'win');
     }
     
     updateUI() {
-        // 当前玩家
         const stone = document.getElementById('currentStone');
         const player = document.getElementById('currentPlayer');
         if (stone) stone.textContent = this.currentPlayer === BLACK ? '⚫' : '⚪';
         if (player) player.textContent = this.currentPlayer === BLACK ? '黑方回合' : '白方回合';
         
-        // 提子
         const blackCap = document.getElementById('blackCaptures');
         const whiteCap = document.getElementById('whiteCaptures');
         if (blackCap) blackCap.textContent = this.captures[BLACK];
         if (whiteCap) whiteCap.textContent = this.captures[WHITE];
         
         this.updateHistory();
+    }
+    
+    updateCompanion() {
+        const emojiEl = document.getElementById('ai-emoji');
+        const nameEl = document.getElementById('ai-name');
+        if (emojiEl) emojiEl.textContent = this.companion.emoji;
+        if (nameEl) nameEl.textContent = this.companion.name;
     }
     
     updateHistory() {
@@ -342,6 +413,7 @@ class GoGame {
         this.updateUI();
         
         this.showToast('新游戏开始！');
+        this.companion.showBubble('normal');
     }
 }
 
@@ -349,13 +421,13 @@ class GoGame {
 function initGame() {
     const difficulty = document.getElementById('aiDifficulty')?.value || 'none';
     const boardSize = parseInt(document.getElementById('boardSize')?.value || '19');
-    const companion = document.getElementById('companionType')?.value || 'adai';
+    const companionType = document.getElementById('companionType')?.value || 'adai';
     
     game = new GoGame({
         aiEnabled: difficulty !== 'none',
         aiDifficulty: difficulty || 'medium',
         boardSize: boardSize,
-        companionType: companion
+        companionType: companionType
     });
 }
 
@@ -370,8 +442,8 @@ function newGame() {
 
 function passTurn() { game && game.pass(); }
 function resign() { game && game.resign(); }
+function undo() { game && game.undo(); }
 
-// 页面加载
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initGame, 200);
 });
