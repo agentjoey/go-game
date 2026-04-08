@@ -1,56 +1,35 @@
 /**
- * 死活题练习逻辑
+ * 死活题练习 - Phase 1 版
  */
 
-// 死活题数据结构
 let puzzles = [];
 let currentPuzzle = null;
 let hintsRemaining = 3;
-let stats = {
-    completed: 0,
-    correct: 0,
-    streak: 0
-};
+let stats = { completed: 0, correct: 0, streak: 0 };
+let puzzleBoard = null;
 
-// 棋盘
-let puzzleBoard;
-
-// 初始化
 async function initTsumego() {
+    // 初始化棋盘
     puzzleBoard = new GoBoard('tsumego-board', 9);
     puzzleBoard.addClickListener(handlePuzzleClick);
     
+    // 加载题目
     await loadPuzzles();
-    renderPuzzleList();
+    
+    // 加载统计
     loadStats();
+    
+    // 绑定筛选事件
+    document.getElementById('puzzleType')?.addEventListener('change', renderPuzzleList);
+    document.getElementById('puzzleDifficulty')?.addEventListener('change', renderPuzzleList);
 }
 
-// 加载死活题数据
 async function loadPuzzles() {
-    try {
-        const response = await fetch('/api/tsumego/list');
-        const data = await response.json();
-        if (data.success) {
-            puzzles = data.data.problems;
-            renderPuzzleList();
-        }
-    } catch (error) {
-        console.error('加载死活题失败:', error);
-        // 使用内置数据
-        puzzles = getDefaultPuzzles();
-        renderPuzzleList();
-    }
-}
-
-// 默认死活题数据
-function getDefaultPuzzles() {
-    return [
+    // 内置题目
+    puzzles = [
         {
-            id: 1,
-            title: '第一题：黑先吃白',
-            type: 'kill',
-            difficulty: 'easy',
-            description: '黑棋如何吃掉角上的白棋？',
+            id: 1, title: '角上吃子', type: 'kill', difficulty: 'easy',
+            description: '黑先吃白，一步即可',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
@@ -62,15 +41,11 @@ function getDefaultPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[3,3]],
-            nextPlayer: 1
+            solution: [[3,3]]
         },
         {
-            id: 2,
-            title: '第二题：黑先做活',
-            type: 'live',
-            difficulty: 'easy',
-            description: '黑棋如何在角上做出两只眼？',
+            id: 2, title: '做活', type: 'live', difficulty: 'easy',
+            description: '黑先，做出两只眼',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
@@ -82,37 +57,12 @@ function getDefaultPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,4]],
-            nextPlayer: 1
+            solution: [[4,4]]
         },
         {
-            id: 3,
-            title: '第三题：黑先对杀',
-            type: 'capture',
-            difficulty: 'medium',
-            description: '黑棋和白棋对杀，谁先动手？',
+            id: 3, title: '紧气', type: 'capture', difficulty: 'easy',
+            description: '黑先，紧气吃白',
             board: [
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,1,1,1,0,0,0],
-                [0,0,0,1,0,2,0,0,0],
-                [0,0,0,1,1,1,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0]
-            ],
-            solution: [[4,4]],
-            nextPlayer: 1
-        },
-        {
-            id: 4,
-            title: '第四题：紧气吃子',
-            type: 'kill',
-            difficulty: 'easy',
-            description: '黑棋紧气吃掉白棋',
-            board: [
-                [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
@@ -120,17 +70,14 @@ function getDefaultPuzzles() {
                 [0,0,0,2,1,2,0,0,0],
                 [0,0,0,0,2,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,3]],
-            nextPlayer: 1
+            solution: [[4,3]]
         },
         {
-            id: 5,
-            title: '第五题：接不归',
-            type: 'kill',
-            difficulty: 'medium',
-            description: '黑棋如何让白棋接不归？',
+            id: 4, title: '接不归', type: 'kill', difficulty: 'medium',
+            description: '黑先，让白棋接不归',
             board: [
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0],
@@ -142,166 +89,136 @@ function getDefaultPuzzles() {
                 [0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0]
             ],
-            solution: [[4,4],[5,4]],
-            nextPlayer: 1
+            solution: [[4,4], [5,4]]
+        },
+        {
+            id: 5, title: '对杀', type: 'capture', difficulty: 'medium',
+            description: '黑先对杀，谁先动手？',
+            board: [
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,1,1,1,0,0,0],
+                [0,0,0,1,0,2,0,0,0],
+                [0,0,0,1,1,1,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0]
+            ],
+            solution: [[4,4]]
         }
     ];
+    
+    renderPuzzleList();
 }
 
-// 渲染题目列表
 function renderPuzzleList() {
     const listEl = document.getElementById('puzzleList');
     const typeFilter = document.getElementById('puzzleType')?.value || 'all';
-    const difficultyFilter = document.getElementById('puzzleDifficulty')?.value || 'all';
+    const diffFilter = document.getElementById('puzzleDifficulty')?.value || 'all';
 
-    let filteredPuzzles = puzzles;
-    if (typeFilter !== 'all') {
-        filteredPuzzles = filteredPuzzles.filter(p => p.type === typeFilter);
-    }
-    if (difficultyFilter !== 'all') {
-        filteredPuzzles = filteredPuzzles.filter(p => p.difficulty === difficultyFilter);
-    }
+    let filtered = puzzles;
+    if (typeFilter !== 'all') filtered = filtered.filter(p => p.type === typeFilter);
+    if (diffFilter !== 'all') filtered = filtered.filter(p => p.difficulty === diffFilter);
 
-    if (filteredPuzzles.length === 0) {
-        listEl.innerHTML = '<p class="text-muted text-center py-4">没有找到符合条件的题目</p>';
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<p class="empty-moves">没有符合条件的题目</p>';
         return;
     }
 
+    const typeName = { kill: '吃子', live: '做活', capture: '对杀' };
+    const diffName = { easy: '入门', medium: '初级', hard: '中级' };
+    const diffClass = { easy: 'easy', medium: 'medium', hard: 'hard' };
+
     let html = '';
-    filteredPuzzles.forEach(puzzle => {
-        const typeName = { kill: '吃子', live: '做活', capture: '对杀' }[puzzle.type];
-        const difficultyClass = { easy: 'success', medium: 'warning', hard: 'danger' }[puzzle.difficulty];
-        
-        html += `
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ${currentPuzzle?.id === puzzle.id ? 'active' : ''}" onclick="selectPuzzle(${puzzle.id}); return false;">
-                <div>
-                    <div class="fw-bold">${puzzle.title}</div>
-                    <small>${puzzle.description}</small>
-                </div>
-                <div>
-                    <span class="badge bg-${difficultyClass}">${puzzle.difficulty === 'easy' ? '入门' : puzzle.difficulty === 'medium' ? '初级' : '中级'}</span>
-                </div>
-            </a>
-        `;
+    filtered.forEach(p => {
+        const active = currentPuzzle?.id === p.id ? 'active' : '';
+        html += `<div class="puzzle-item ${active}" onclick="selectPuzzle(${p.id})">
+            <div class="puzzle-info">
+                <span class="puzzle-title">${p.title}</span>
+                <span class="puzzle-desc">${p.description}</span>
+            </div>
+            <div class="puzzle-tags">
+                <span class="tag tag-${p.type}">${typeName[p.type]}</span>
+                <span class="tag tag-${diffClass[p.difficulty]}">${diffName[p.difficulty]}</span>
+            </div>
+        </div>`;
     });
 
     listEl.innerHTML = html;
 }
 
-// 选择题目
 function selectPuzzle(id) {
     currentPuzzle = puzzles.find(p => p.id === id);
     if (!currentPuzzle) return;
 
     hintsRemaining = 3;
     document.getElementById('hintsLeft').textContent = hintsRemaining;
-    document.getElementById('puzzleTitle').textContent = currentPuzzle.title;
-    document.getElementById('puzzleDesc').textContent = currentPuzzle.description;
+    document.getElementById('puzzleTitle').textContent = `第${id}题: ${currentPuzzle.title}`;
+    document.getElementById('puzzleDesc').innerHTML = `<p>${currentPuzzle.description}</p>`;
 
-    // 复用已有的棋盘实例，只更新棋盘数据
-    if (!puzzleBoard) {
-        puzzleBoard = new GoBoard('tsumego-board', 9);
-        puzzleBoard.addClickListener(handlePuzzleClick);
-    }
-    puzzleBoard.setBoard(JSON.parse(JSON.stringify(currentPuzzle.board)));
+    // 重置棋盘
+    puzzleBoard.board = currentPuzzle.board.map(row => [...row]);
+    puzzleBoard.render();
+    puzzleBoard.addClickListener(handlePuzzleClick);
 
     renderPuzzleList();
 }
 
-// 处理点击
 function handlePuzzleClick(row, col) {
     if (!currentPuzzle || !puzzleBoard) return;
 
-    // 检查是否是正确的解法
     const isCorrect = currentPuzzle.solution.some(([r, c]) => r === row && c === col);
     
     if (isCorrect) {
-        // 正确：放置黑棋并显示成功
+        // 放置棋子
         puzzleBoard.board[row][col] = 1;
         puzzleBoard.render();
-        showFeedback(true, '回答正确！🎉');
         
-        // 更新统计
+        showToast('🎉 正确！', 'success');
+        
         stats.completed++;
         stats.correct++;
         stats.streak++;
         saveStats();
         updateStatsUI();
         
-        // 延迟后进入下一题
-        setTimeout(() => {
-            nextPuzzle();
-        }, 1500);
+        setTimeout(nextPuzzle, 1500);
     } else {
-        // 错误
-        showFeedback(false, '回答错误，请再试试！');
+        showToast('再想想...', 'error');
         stats.streak = 0;
         saveStats();
         updateStatsUI();
     }
 }
 
-// 显示反馈
-function showFeedback(correct, message) {
-    const colors = correct ? 'bg-success' : 'bg-danger';
-    const feedback = document.createElement('div');
-    feedback.className = `toast show ${colors} text-white`;
-    feedback.setAttribute('role', 'alert');
-    feedback.innerHTML = `<div class="toast-body fs-4 text-center">${message}</div>`;
-    
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container position-fixed top-50 start-50 translate-middle';
-        document.body.appendChild(container);
-    }
-    container.innerHTML = '';
-    container.appendChild(feedback);
-
-    setTimeout(() => feedback.remove(), 1500);
-}
-
-// 提示
 function showHint() {
     if (!currentPuzzle || hintsRemaining <= 0) return;
-
+    
     hintsRemaining--;
     document.getElementById('hintsLeft').textContent = hintsRemaining;
-
-    // 显示一个正确解法的位置
-    const solution = currentPuzzle.solution[0];
-    puzzleBoard.board[solution[0]][solution[1]] = 2; // 临时显示白棋表示位置
-    puzzleBoard.render();
     
-    setTimeout(() => {
-        puzzleBoard.board[solution[0]][solution[1]] = 0;
-        puzzleBoard.render();
-    }, 1000);
+    const sol = currentPuzzle.solution[0];
+    showToast(`提示: 位置 ${String.fromCharCode(65 + sol[1])}${9 - sol[0]}`, 'info');
 }
 
-// 重置题目
 function resetPuzzle() {
     if (!currentPuzzle) return;
-    puzzleBoard.setBoard(currentPuzzle.board.map(row => [...row]));
+    puzzleBoard.board = currentPuzzle.board.map(row => [...row]);
     puzzleBoard.render();
 }
 
-// 下一题
 function nextPuzzle() {
     if (puzzles.length === 0) return;
-    
-    const currentIndex = puzzles.findIndex(p => p.id === currentPuzzle?.id);
-    const nextIndex = (currentIndex + 1) % puzzles.length;
-    selectPuzzle(puzzles[nextIndex].id);
+    const idx = puzzles.findIndex(p => p.id === currentPuzzle?.id);
+    const nextIdx = (idx + 1) % puzzles.length;
+    selectPuzzle(puzzles[nextIdx].id);
 }
 
-// 统计相关
 function loadStats() {
     const saved = localStorage.getItem('tsumego_stats');
-    if (saved) {
-        stats = JSON.parse(saved);
-        updateStatsUI();
-    }
+    if (saved) stats = JSON.parse(saved);
+    updateStatsUI();
 }
 
 function saveStats() {
@@ -312,15 +229,17 @@ function updateStatsUI() {
     document.getElementById('completedCount').textContent = stats.completed;
     document.getElementById('correctCount').textContent = stats.correct;
     document.getElementById('streakCount').textContent = stats.streak;
-    
     const rate = stats.completed > 0 ? Math.round(stats.correct / stats.completed * 100) : 0;
     document.getElementById('accuracyRate').textContent = `${rate}%`;
 }
 
-// 绑定筛选事件
-document.addEventListener('DOMContentLoaded', () => {
-    initTsumego();
-    
-    document.getElementById('puzzleType')?.addEventListener('change', renderPuzzleList);
-    document.getElementById('puzzleDifficulty')?.addEventListener('change', renderPuzzleList);
-});
+function showToast(msg, type = 'info') {
+    const t = document.createElement('div');
+    t.className = `toast show toast-${type}`;
+    t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#fff;padding:16px 32px;border-radius:8px;font-size:18px;z-index:9999;';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2000);
+}
+
+document.addEventListener('DOMContentLoaded', initTsumego);

@@ -1,179 +1,118 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>死活题 - 围棋学堂</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 导航 -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">⚪ 围棋学堂</a>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/play">对弈</a>
+                <a href="/tsumego" class="active">死活题</a>
+                <a href="/tutorial">教程</a>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}死活题练习 - Go Learning{% endblock %}
+    <main class="container py-4">
+        <div class="page-header">
+            <h1>🧩 死活题练习</h1>
+            <p class="text-muted">提高计算力，从每一道题开始</p>
+        </div>
 
-{% block content %}
-<div class="tsumego-page">
-    <!-- 题目列表侧边栏 -->
-    <aside class="tsumego-sidebar">
-        <div class="panel filter-panel">
-            <h3>🔍 筛选题目</h3>
-            <div class="filter-group">
-                <label>分类</label>
-                <div class="filter-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="capture" checked>
-                        <span>🎯 吃子题</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="life" checked>
-                        <span>💚 做活题</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="kill" checked>
-                        <span>⚔️ 对杀题</span>
-                    </label>
+        <div class="game-layout">
+            <!-- 左侧：题目列表 -->
+            <div class="moves-panel">
+                <div class="panel-header">
+                    <h5>📚 题目列表</h5>
+                </div>
+                <!-- 筛选 -->
+                <div class="filter-section">
+                    <select id="puzzleType" class="form-select form-select-sm">
+                        <option value="all">全部类型</option>
+                        <option value="kill">吃子题</option>
+                        <option value="live">做活题</option>
+                        <option value="capture">对杀题</option>
+                    </select>
+                    <select id="puzzleDifficulty" class="form-select form-select-sm">
+                        <option value="all">全部难度</option>
+                        <option value="easy">入门</option>
+                        <option value="medium">初级</option>
+                        <option value="hard">中级</option>
+                    </select>
+                </div>
+                <div id="puzzleList" class="moves-list">
+                    <!-- 题目列表由 JS 渲染 -->
                 </div>
             </div>
-            <div class="filter-group">
-                <label>难度</label>
-                <div class="filter-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="beginner" checked>
-                        <span>🌱 入门</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="elementary" checked>
-                        <span>🌿 初级</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" value="intermediate" checked>
-                        <span>🌳 中级</span>
-                    </label>
+
+            <!-- 中间：棋盘 -->
+            <div class="board-area">
+                <div class="board-info">
+                    <span class="current-player">
+                        <span id="puzzleTitle">选择一个题目开始</span>
+                    </span>
+                    <span class="captures">
+                        剩余提示: <span id="hintsLeft" class="capture-count">3</span>
+                    </span>
+                </div>
+                <div class="board-wrapper">
+                    <div id="tsumego-board" class="go-board"></div>
+                </div>
+                <div class="board-controls">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="resetPuzzle()">🔄 重置</button>
+                    <button class="btn btn-primary btn-sm" onclick="showHint()">💡 提示</button>
+                    <button class="btn btn-outline-success btn-sm" onclick="nextPuzzle()">下一题 →</button>
                 </div>
             </div>
-            <button class="btn btn-secondary btn-block" id="reset-filters">
-                重置筛选
-            </button>
-        </div>
 
-        <div class="panel stats-panel">
-            <h3>📊 学习统计</h3>
-            <div class="stat-item">
-                <span class="stat-label">已完成</span>
-                <span class="stat-value" id="completed-count">0/50</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">正确率</span>
-                <span class="stat-value" id="accuracy-rate">0%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">当前连对</span>
-                <span class="stat-value" id="current-streak">0</span>
-            </div>
-        </div>
-
-        <div class="panel problem-list-panel">
-            <h3>📋 题目列表</h3>
-            <div class="problem-list" id="problem-list">
-                <!-- 动态生成 -->
-            </div>
-        </div>
-    </aside>
-
-    <!-- 主内容区 -->
-    <div class="tsumego-main">
-        <!-- 题目信息栏 -->
-        <div class="problem-header">
-            <div class="problem-info">
-                <span class="problem-number" id="problem-number">#1</span>
-                <span class="problem-title" id="problem-title">一线吃子</span>
-                <span class="problem-tags">
-                    <span class="tag tag-category" id="problem-category">吃子题</span>
-                    <span class="tag tag-difficulty" id="problem-difficulty">入门</span>
-                </span>
-            </div>
-            <div class="problem-actions">
-                <button class="btn btn-icon" id="btn-prev" title="上一题">
-                    <span>⬅️</span>
-                </button>
-                <button class="btn btn-icon" id="btn-next" title="下一题">
-                    <span>➡️</span>
-                </button>
-                <button class="btn btn-icon" id="btn-random" title="随机题目">
-                    <span>🎲</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 棋盘区域 -->
-        <div class="problem-board-area">
-            <div class="board-wrapper">
-                <div id="tsumego-board" class="go-board tsumego-board"></div>
-            </div>
-
-            <!-- 题目信息卡片 -->
-            <div class="problem-card">
-                <div class="problem-description">
-                    <h4>题目描述</h4>
-                    <p id="problem-desc">白棋在一线，黑棋如何吃掉它？</p>
+            <!-- 右侧：统计 -->
+            <div class="companion-panel">
+                <div class="panel-header">
+                    <h5>📊 练习统计</h5>
+                </div>
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <span class="stat-value" id="completedCount">0</span>
+                        <span class="stat-label">已完成</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value text-success" id="correctCount">0</span>
+                        <span class="stat-label">正确</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="accuracyRate">0%</span>
+                        <span class="stat-label">正确率</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value text-gold" id="streakCount">0</span>
+                        <span class="stat-label">连续正确</span>
+                    </div>
+                </div>
+                <div class="puzzle-desc" id="puzzleDesc">
+                    <p>选择一个题目开始练习</p>
                 </div>
                 <div class="hint-section">
-                    <div class="hint-header">
-                        <h4>💡 提示系统</h4>
-                        <span class="hint-count">剩余: <span id="hints-remaining">3</span>/3</span>
-                    </div>
-                    <div class="hint-content" id="hint-content">
-                        <p class="hint-placeholder">点击获取提示（最多3次）</p>
-                    </div>
-                    <button class="btn btn-hint" id="btn-hint" {% if false %}disabled{% endif %}>
-                        <span>💡</span> 获取提示
-                    </button>
+                    <h6>题目类型说明</h6>
+                    <ul>
+                        <li><strong>吃子题</strong>：吃掉对方的棋子</li>
+                        <li><strong>做活题</strong>：让自己的棋活起来</li>
+                        <li><strong>对杀题</strong>：比谁先吃掉对方</li>
+                    </ul>
                 </div>
             </div>
         </div>
+    </main>
 
-        <!-- 反馈区域 -->
-        <div class="feedback-area" id="feedback-area">
-            <div class="feedback-content" id="feedback-content">
-                <!-- 动态生成 -->
-            </div>
-        </div>
-
-        <!-- 控制栏 -->
-        <div class="problem-controls">
-            <button class="btn btn-secondary" id="btn-reset-problem">
-                <span>🔄</span> 重置
-            </button>
-            <button class="btn btn-secondary" id="btn-show-answer">
-                <span>👁️</span> 显示答案
-            </button>
-            <button class="btn btn-primary" id="btn-submit">
-                <span>✓</span> 提交答案
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- 答案解析弹窗 -->
-<div class="modal" id="solution-modal">
-    <div class="modal-content modal-large">
-        <div class="modal-header">
-            <h3>📖 答案解析</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="solution-board-wrapper">
-                <div id="solution-board" class="go-board solution-board"></div>
-            </div>
-            <div class="solution-explanation">
-                <h4>解析</h4>
-                <p id="solution-text"></p>
-                <div class="solution-moves">
-                    <h4>正解</h4>
-                    <div id="solution-moves-list"></div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="close-solution">关闭</button>
-            <button class="btn btn-primary" id="next-after-solution">下一题</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static_files', filename='js/go-board.js') }}"></script>
-<script src="{{ url_for('static_files', filename='js/tsumego.js') }}"></script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/go-board.js"></script>
+    <script src="/static/js/tsumego.js"></script>
+</body>
+</html>

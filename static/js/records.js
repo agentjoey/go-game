@@ -1,378 +1,286 @@
 /**
- * 棋谱管理逻辑
+ * 棋谱回放 - Phase 1 版
  */
 
-let records = [];
-let currentRecord = null;
+let gameRecords = [];
+let currentGame = null;
+let currentMoveIndex = 0;
 let replayBoard = null;
-let replayIndex = 0;
+let isPlaying = false;
+let playInterval = null;
 
-// 初始化
-function initRecords() {
-    loadRecords();
-    renderRecordList();
+async function initRecords() {
+    // 初始化棋盘
+    replayBoard = new GoBoard('replay-board', 19);
+    
+    // 加载对局记录
+    loadGameRecords();
+    
+    // 渲染列表
+    renderGameList();
+    
+    // 绑定进度条事件
+    document.getElementById('progressSlider')?.addEventListener('input', (e) => {
+        currentMoveIndex = parseInt(e.target.value);
+        updateReplayBoard();
+    });
 }
 
-// 加载棋谱
-function loadRecords() {
-    const saved = localStorage.getItem('go_records');
+function loadGameRecords() {
+    // 从 localStorage 加载
+    const saved = localStorage.getItem('go_game_records');
+    
     if (saved) {
-        records = JSON.parse(saved);
+        gameRecords = JSON.parse(saved);
+    } else {
+        // 添加一个示例对局
+        gameRecords = [
+            {
+                id: 1,
+                date: '2026-04-09',
+                black: '小明',
+                white: 'AI阿呆',
+                result: '黑胜',
+                moves: generateSampleGame()
+            }
+        ];
     }
 }
 
-// 保存棋谱
-function saveRecords() {
-    localStorage.setItem('go_records', JSON.stringify(records));
+function generateSampleGame() {
+    // 生成一个简单的示例对局 (9路)
+    const moves = [];
+    const pattern = [
+        [2,2],[2,6],[6,2],[6,6],[4,4],
+        [2,4],[4,2],[4,6],[6,4],
+        [2,8],[8,2],[8,8],[8,6],
+        [0,0]
+    ];
+    
+    pattern.forEach((pos, i) => {
+        moves.push({
+            player: i % 2 === 0 ? 1 : 2,
+            row: pos[0],
+            col: pos[1],
+            coord: String.fromCharCode(65 + pos[1]) + (9 - pos[0])
+        });
+    });
+    
+    return moves;
 }
 
-// 渲染棋谱列表
-function renderRecordList() {
-    const listEl = document.getElementById('recordList');
+function renderGameList() {
+    const listEl = document.getElementById('gameList');
     
-    if (records.length === 0) {
-        listEl.innerHTML = '<p class="text-muted text-center py-4">暂无保存的棋谱</p>';
+    if (gameRecords.length === 0) {
+        listEl.innerHTML = '<p class="empty-moves">暂无对局记录</p>';
         return;
     }
-
+    
     let html = '';
-    records.forEach((record, index) => {
-        const date = new Date(record.date).toLocaleDateString('zh-CN');
-        const resultText = record.result ? `结果: ${record.result}` : '';
-        
-        html += `
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ${currentRecord?.id === record.id ? 'active' : ''}" onclick="openRecord(${index}); return false;">
-                <div>
-                    <div class="fw-bold">${record.name || '对局 ' + (index + 1)}</div>
-                    <small>${date} · ${record.moves?.length || 0} 手 ${resultText}</small>
-                </div>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteRecord(${index}); event.stopPropagation();">×</button>
-            </a>
-        `;
+    gameRecords.forEach(g => {
+        const active = currentGame?.id === g.id ? 'active' : '';
+        html += `<div class="game-item ${active}" onclick="selectGame(${g.id})">
+            <div class="game-info">
+                <span class="game-date">${g.date}</span>
+                <span class="game-players">⚫${g.black} vs ⚪${g.white}</span>
+            </div>
+            <div class="game-result ${g.result.includes('黑') ? 'black-win' : 'white-win'}">
+                ${g.result}
+            </div>
+        </div>`;
     });
-
+    
     listEl.innerHTML = html;
 }
 
-// 打开棋谱
-function openRecord(index) {
-    if (index < 0 || index >= records.length) return;
+function selectGame(id) {
+    currentGame = gameRecords.find(g => g.id === id);
+    if (!currentGame) return;
     
-    currentRecord = records[index];
-    replayIndex = 0;
+    currentMoveIndex = 0;
+    isPlaying = false;
+    if (playInterval) clearInterval(playInterval);
     
-    renderRecordList();
-    renderReplay();
+    // 更新 UI
+    document.getElementById('gameInfo').textContent = 
+        `⚫${currentGame.black} vs ⚪${currentGame.white}`;
+    
+    // 更新进度条
+    const slider = document.getElementById('progressSlider');
+    slider.max = currentGame.moves.length;
+    slider.value = 0;
+    
+    // 清空棋盘
+    replayBoard = new GoBoard('replay-board', 19);
+    updateReplayBoard();
+    updateGameDetails();
+    updateAICommentary();
+    renderGameList();
 }
 
-// 渲染回放界面
-function renderReplay() {
-    const contentEl = document.getElementById('replayContent');
-    
-    if (!currentRecord) {
-        contentEl.innerHTML = `
-            <div class="text-center py-5">
-                <h3>📖 棋谱回放</h3>
-                <p class="text-muted mt-3">从左侧选择一个棋谱开始回放</p>
-            </div>
-        `;
-        return;
-    }
-
-    const totalMoves = currentRecord.moves?.length || 0;
-    
-    contentEl.innerHTML = `
-        <div class="text-center mb-3">
-            <h4>${currentRecord.name || '棋谱回放'}</h4>
-            <p class="text-muted mb-0">共 ${totalMoves} 手</p>
-        </div>
-        
-        <div class="go-board" id="replayBoard"></div>
-        
-        <!-- 进度条 -->
-        <div class="mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span>第 <span id="currentMoveNum">0</span> 手</span>
-                <span>共 ${totalMoves} 手</span>
-            </div>
-            <input type="range" class="form-range" id="replaySlider" min="0" max="${totalMoves}" value="0" onchange="jumpToMove(this.value)">
-        </div>
-        
-        <!-- 控制按钮 -->
-        <div class="text-center mt-3">
-            <div class="btn-group" role="group">
-                <button class="btn btn-outline-primary" onclick="replayFirst()">⏮</button>
-                <button class="btn btn-outline-primary" onclick="replayPrev()">◀</button>
-                <button class="btn btn-primary" id="playPauseBtn" onclick="togglePlayPause()">▶</button>
-                <button class="btn btn-outline-primary" onclick="replayNext()">▶</button>
-                <button class="btn btn-outline-primary" onclick="replayLast()">⏭</button>
-            </div>
-        </div>
-        
-        <!-- 落子记录 -->
-        <div class="mt-4">
-            <h6>落子记录</h6>
-            <div id="replayMoves" class="move-history" style="max-height: 200px; overflow-y: auto;">
-            </div>
-        </div>
-        
-        <!-- 操作按钮 -->
-        <div class="mt-4 d-flex justify-content-between">
-            <button class="btn btn-outline-success" onclick="exportSGF()">导出 SGF</button>
-            <button class="btn btn-outline-primary" onclick="replayAuto()">自动播放</button>
-        </div>
-    `;
-
-    // 初始化棋盘（复用已有实例）
-    setTimeout(() => {
-        if (!replayBoard) {
-            replayBoard = new GoBoard('replay-board', 19);
-        }
-        updateReplayBoard();
-    }, 100);
-}
-
-// 更新棋盘
 function updateReplayBoard() {
-    if (!replayBoard || !currentRecord) return;
+    if (!currentGame || !replayBoard) return;
     
-    const board = Array(19).fill(null).map(() => Array(19).fill(0));
+    // 创建空棋盘
+    const size = 19;
+    const board = Array(size).fill(null).map(() => Array(size).fill(0));
     
-    // 回放所有落子
-    for (let i = 0; i <= replayIndex; i++) {
-        const move = currentRecord.moves[i];
-        if (move && move.row !== undefined) {
-            board[move.row][move.col] = move.player;
-        }
+    // 逐手放置棋子
+    for (let i = 0; i <= currentMoveIndex && i < currentGame.moves.length; i++) {
+        const m = currentGame.moves[i];
+        board[m.row][m.col] = m.player;
     }
     
     replayBoard.setBoard(board);
     
-    // 标记最后一手
-    if (replayIndex > 0 && currentRecord.moves[replayIndex]) {
-        const lastMove = currentRecord.moves[replayIndex];
-        if (lastMove.row !== undefined) {
-            replayBoard.setLastMove(lastMove.row, lastMove.col);
-        }
+    // 更新最后一手
+    if (currentMoveIndex > 0 && currentMoveIndex <= currentGame.moves.length) {
+        const lastMove = currentGame.moves[currentMoveIndex - 1];
+        replayBoard.setLastMove(lastMove.row, lastMove.col);
     } else {
         replayBoard.clearLastMove();
     }
     
-    // 更新 UI
-    document.getElementById('currentMoveNum').textContent = replayIndex;
-    document.getElementById('replaySlider').value = replayIndex;
+    // 更新进度
+    document.getElementById('moveNumber').textContent = currentMoveIndex;
+    document.getElementById('progressSlider').value = currentMoveIndex;
     
-    // 更新落子记录
-    renderReplayMoves();
+    updateGameDetails();
 }
 
-// 渲染落子记录
-function renderReplayMoves() {
-    const movesEl = document.getElementById('replayMoves');
-    if (!movesEl || !currentRecord) return;
-    
-    let html = '<div class="row g-2">';
-    for (let i = 0; i < currentRecord.moves.length; i++) {
-        const move = currentRecord.moves[i];
-        if (move.type === 'pass') {
-            html += `<div class="col-auto"><span class="badge ${i === replayIndex ? 'bg-primary' : 'bg-secondary'}">${i + 1}. PASS</span></div>`;
-        } else {
-            const stone = move.player === 1 ? '⚫' : '⚪';
-            const coord = move.coord || `${String.fromCharCode(65 + move.col)}${19 - move.row}`;
-            html += `<div class="col-auto"><span class="badge ${i === replayIndex ? 'bg-primary' : 'bg-secondary'}">${i + 1}. ${stone} ${coord}</span></div>`;
-        }
-    }
-    html += '</div>';
-    movesEl.innerHTML = html;
-}
-
-// 回放控制
-function replayFirst() {
-    replayIndex = 0;
-    updateReplayBoard();
-}
-
-function replayPrev() {
-    if (replayIndex > 0) {
-        replayIndex--;
-        updateReplayBoard();
-    }
-}
-
-function replayNext() {
-    const total = currentRecord?.moves?.length || 0;
-    if (replayIndex < total) {
-        replayIndex++;
-        updateReplayBoard();
-    }
-}
-
-function replayLast() {
-    replayIndex = currentRecord?.moves?.length || 0;
-    updateReplayBoard();
-}
-
-function jumpToMove(index) {
-    replayIndex = parseInt(index);
-    updateReplayBoard();
-}
-
-// 自动播放
-let isPlaying = false;
-let playInterval = null;
-
-function togglePlayPause() {
-    if (isPlaying) {
-        stopPlay();
-    } else {
-        startPlay();
-    }
-}
-
-function startPlay() {
-    isPlaying = true;
-    document.getElementById('playPauseBtn').textContent = '⏸';
-    
-    playInterval = setInterval(() => {
-        const total = currentRecord?.moves?.length || 0;
-        if (replayIndex >= total) {
-            stopPlay();
-            return;
-        }
-        replayNext();
-    }, 800);
-}
-
-function stopPlay() {
-    isPlaying = false;
-    document.getElementById('playPauseBtn').textContent = '▶';
-    if (playInterval) {
-        clearInterval(playInterval);
-        playInterval = null;
-    }
-}
-
-function replayAuto() {
-    replayFirst();
-    startPlay();
-}
-
-// 删除棋谱
-function deleteRecord(index) {
-    if (confirm('确定要删除这个棋谱吗？')) {
-        records.splice(index, 1);
-        saveRecords();
-        
-        if (currentRecord && records.findIndex(r => r.id === currentRecord.id) === -1) {
-            currentRecord = null;
-            renderReplay();
-        }
-        
-        renderRecordList();
-    }
-}
-
-// 导入 SGF
-function importSGF() {
-    document.getElementById('sgfFileInput').click();
-}
-
-function handleFileImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const content = e.target.result;
-        parseAndSaveSGF(content, file.name);
-    };
-    reader.readAsText(file);
-    
-    // 清空 input 以允许重复导入同一文件
-    event.target.value = '';
-}
-
-function parseAndSaveSGF(content, name) {
-    // 简化版 SGF 解析
-    const moves = [];
-    
-    // 提取所有 B[] 和 W[] 
-    const moveRegex = /;([BW])\[([a-t]{2})\]/gi;
-    let match;
-    
-    while ((match = moveRegex.exec(content)) !== null) {
-        const player = match[1] === 'B' ? 1 : 2;
-        const col = match[2].charCodeAt(0) - 97;
-        const row = match[2].charCodeAt(1) - 97;
-        moves.push({
-            player: player,
-            row: row,
-            col: col,
-            coord: `${String.fromCharCode(65 + col)}${19 - row}`
-        });
-    }
-    
-    if (moves.length === 0) {
-        alert('无法解析 SGF 文件');
+function updateGameDetails() {
+    const el = document.getElementById('gameDetails');
+    if (!currentGame) {
+        el.innerHTML = '<p class="text-muted">选择对局查看详情</p>';
         return;
     }
     
-    const record = {
-        id: Date.now(),
-        name: name.replace('.sgf', ''),
-        date: new Date().toISOString(),
-        moves: moves,
-        result: null
-    };
-    
-    records.unshift(record);
-    saveRecords();
-    renderRecordList();
-    openRecord(0);
+    const total = currentGame.moves.length;
+    el.innerHTML = `
+        <div class="detail-item">
+            <span class="detail-label">日期</span>
+            <span class="detail-value">${currentGame.date}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">黑方</span>
+            <span class="detail-value">⚫ ${currentGame.black}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">白方</span>
+            <span class="detail-value">⚪ ${currentGame.white}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">结果</span>
+            <span class="detail-value">${currentGame.result}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">总手数</span>
+            <span class="detail-value">${total} 手</span>
+        </div>
+        ${currentMoveIndex > 0 ? `
+        <div class="detail-item">
+            <span class="detail-label">当前手</span>
+            <span class="detail-value">⚫/${currentGame.moves[currentMoveIndex-1]?.coord || '-'}</span>
+        </div>
+        ` : ''}
+    `;
 }
 
-// 导出 SGF
-function exportSGF() {
-    if (!currentRecord) return;
+function updateAICommentary() {
+    const el = document.getElementById('ai-commentary');
+    if (!currentGame || currentMoveIndex === 0) {
+        el.innerHTML = '<p class="text-muted">开始播放后显示 AI 点评</p>';
+        return;
+    }
     
-    let sgf = '(;GM[1]SZ[19]FF[4]';
-    sgf += `CA[UTF-8]GN[${currentRecord.name || 'Go Game'}]`;
+    // 简单的 AI 点评生成
+    const moveNum = currentMoveIndex;
+    const player = currentMoveIndex % 2 === 1 ? '黑' : '白';
+    const coord = currentGame.moves[currentMoveIndex - 1]?.coord || '-';
     
-    currentRecord.moves.forEach(move => {
-        if (move.type === 'pass') {
-            sgf += `;${move.player === 1 ? 'B' : 'W'}[]`;
-        } else {
-            const col = String.fromCharCode(97 + move.col);
-            const row = String.fromCharCode(97 + move.row);
-            sgf += `;${move.player === 1 ? 'B' : 'W'}[${col}${row}]`;
+    let commentary = '';
+    if (moveNum <= 5) {
+        commentary = `${player}在${coord}落子，布局阶段。`;
+    } else if (moveNum <= 20) {
+        commentary = `${player}在${coord}落子，中盘战斗正在进行。`;
+    } else {
+        commentary = `${player}在${coord}落子，官子阶段。`;
+    }
+    
+    el.innerHTML = `<div class="commentary-text">💬 ${commentary}</div>`;
+}
+
+function goToStart() {
+    if (!currentGame) return;
+    currentMoveIndex = 0;
+    updateReplayBoard();
+}
+
+function goToEnd() {
+    if (!currentGame) return;
+    currentMoveIndex = currentGame.moves.length;
+    updateReplayBoard();
+}
+
+function prevMove() {
+    if (!currentGame || currentMoveIndex <= 0) return;
+    currentMoveIndex--;
+    updateReplayBoard();
+}
+
+function nextMove() {
+    if (!currentGame || currentMoveIndex >= currentGame.moves.length) return;
+    currentMoveIndex++;
+    updateReplayBoard();
+    updateAICommentary();
+}
+
+function playPause() {
+    if (!currentGame) return;
+    
+    if (isPlaying) {
+        isPlaying = false;
+        if (playInterval) clearInterval(playInterval);
+    } else {
+        if (currentMoveIndex >= currentGame.moves.length) {
+            currentMoveIndex = 0;
         }
-    });
-    
-    sgf += ')';
-    
-    const blob = new Blob([sgf], { type: 'application/x-go-sgf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentRecord.name || 'go_game'}.sgf`;
-    a.click();
-    URL.revokeObjectURL(url);
+        isPlaying = true;
+        playInterval = setInterval(() => {
+            if (currentMoveIndex < currentGame.moves.length) {
+                currentMoveIndex++;
+                updateReplayBoard();
+                updateAICommentary();
+            } else {
+                isPlaying = false;
+                clearInterval(playInterval);
+            }
+        }, 800);
+    }
 }
 
-// 添加新棋谱（从对弈中调用）
-function addRecord(moves, name) {
-    const record = {
+// 保存对局
+function saveCurrentGame() {
+    if (!currentGame) return;
+    
+    // 从 go-game.js 的游戏结果中保存
+    const gameData = {
         id: Date.now(),
-        name: name || `对局 ${records.length + 1}`,
-        date: new Date().toISOString(),
-        moves: moves,
-        result: null
+        date: new Date().toISOString().split('T')[0],
+        black: '玩家',
+        white: 'AI',
+        result: '进行中',
+        moves: []
     };
     
-    records.unshift(record);
-    saveRecords();
-    renderRecordList();
+    gameRecords.unshift(gameData);
+    localStorage.setItem('go_game_records', JSON.stringify(gameRecords));
+    renderGameList();
 }
 
-// 页面加载时初始化
+// 页面加载
 document.addEventListener('DOMContentLoaded', initRecords);
+
+// 暴露给全局
+window.saveCurrentGame = saveCurrentGame;

@@ -1,158 +1,129 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>围棋教程 - 围棋学堂</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 导航 -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">⚪ 围棋学堂</a>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/play">对弈</a>
+                <a href="/tsumego">死活题</a>
+                <a href="/tutorial" class="active">教程</a>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}围棋教程 - Go Learning{% endblock %}
+    <main class="container py-4">
+        <div class="page-header">
+            <h1>📚 围棋教程</h1>
+            <p class="text-muted">从零开始，学习围棋基础知识</p>
+        </div>
 
-{% block content %}
-<div class="tutorial-page">
-    <!-- 教程列表侧边栏 -->
-    <aside class="tutorial-sidebar">
-        <div class="panel progress-panel">
-            <h3>📊 学习进度</h3>
-            <div class="overall-progress">
-                <div class="progress-circle" id="overall-progress">
-                    <svg viewBox="0 0 100 100">
-                        <circle class="progress-bg" cx="50" cy="50" r="45"/>
-                        <circle class="progress-fill" cx="50" cy="50" r="45" style="stroke-dasharray: 0 283"/>
-                    </svg>
-                    <span class="progress-text">0%</span>
+        <div class="game-layout">
+            <!-- 左侧：章节列表 -->
+            <div class="moves-panel">
+                <div class="panel-header">
+                    <h5>📖 课程目录</h5>
                 </div>
-                <p class="progress-detail">已完成 <span id="completed-tutorials">0</span>/8 个教程</p>
-            </div>
-        </div>
-
-        <div class="panel tutorial-list-panel">
-            <h3>📚 教程目录</h3>
-            <div class="tutorial-list" id="tutorial-list">
-                <!-- 动态生成 -->
-            </div>
-        </div>
-    </aside>
-
-    <!-- 主内容区 -->
-    <div class="tutorial-main" id="tutorial-main">
-        <!-- 教程概览 -->
-        <div class="tutorial-overview" id="tutorial-overview">
-            <div class="overview-header">
-                <h2>📚 围棋入门教程</h2>
-                <p>从零开始学习围棋，8个章节循序渐进</p>
-            </div>
-            <div class="tutorial-grid">
-                <!-- 动态生成教程卡片 -->
-            </div>
-        </div>
-
-        <!-- 教程内容 -->
-        <div class="tutorial-content" id="tutorial-content" style="display: none;">
-            <!-- 进度指示器 -->
-            <div class="step-indicator">
-                <div class="step-progress">
-                    <div class="step-progress-bar" id="step-progress-bar"></div>
+                <div id="chapterList" class="moves-list">
+                    <!-- 章节列表由 JS 渲染 -->
                 </div>
-                <span class="step-count">步骤 <span id="current-step">1</span>/<span id="total-steps">4</span></span>
-            </div>
-
-            <!-- 步骤内容 -->
-            <div class="step-content" id="step-content">
-                <!-- 动态生成 -->
-            </div>
-
-            <!-- 导航按钮 -->
-            <div class="step-navigation">
-                <button class="btn btn-secondary" id="btn-prev-step">
-                    <span>⬅️</span> 上一步
-                </button>
-                <button class="btn btn-secondary" id="btn-tutorial-list">
-                    <span>📋</span> 教程列表
-                </button>
-                <button class="btn btn-primary" id="btn-next-step">
-                    下一步 <span>➡️</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 交互练习弹窗 -->
-<div class="modal" id="exercise-modal">
-    <div class="modal-content modal-large">
-        <div class="modal-header">
-            <h3>🎯 互动练习</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="exercise-container">
-                <div class="exercise-board-wrapper">
-                    <div id="exercise-board" class="go-board exercise-board"></div>
-                </div>
-                <div class="exercise-info">
-                    <h4 id="exercise-title">练习</h4>
-                    <p id="exercise-instruction">请按照指示完成练习</p>
-                    <div class="exercise-feedback" id="exercise-feedback"></div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="btn-reset-exercise">重置</button>
-            <button class="btn btn-primary" id="btn-check-exercise">提交</button>
-        </div>
-    </div>
-</div>
-
-<!-- 测验弹窗 -->
-<div class="modal" id="quiz-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>❓ 知识测验</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="quiz-container">
-                <p class="quiz-question" id="quiz-question"></p>
-                <div class="quiz-options" id="quiz-options">
-                    <!-- 动态生成 -->
-                </div>
-                <div class="quiz-feedback" id="quiz-feedback"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="btn-close-quiz">跳过</button>
-            <button class="btn btn-primary" id="btn-submit-quiz">提交答案</button>
-        </div>
-    </div>
-</div>
-
-<!-- 完成弹窗 -->
-<div class="modal" id="completion-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>🎉 恭喜完成！</h3>
-        </div>
-        <div class="modal-body">
-            <div class="completion-content">
-                <div class="completion-icon">🏆</div>
-                <h4 id="completion-title">教程完成</h4>
-                <p id="completion-message">你已经完成了这个教程的学习！</p>
-                <div class="completion-stats">
-                    <div class="stat">
-                        <span class="stat-number" id="completion-steps">0</span>
-                        <span class="stat-label">步骤</span>
+                <div class="progress-section">
+                    <div class="progress-label">学习进度</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number" id="completion-exercises">0</span>
-                        <span class="stat-label">练习</span>
+                    <div class="progress-text" id="progressText">0 / 8 章节</div>
+                </div>
+            </div>
+
+            <!-- 中间：教程内容 -->
+            <div class="board-area tutorial-content-area">
+                <div id="tutorialContent" class="tutorial-content">
+                    <div class="tutorial-welcome">
+                        <div class="welcome-icon">🐼</div>
+                        <h2>欢迎学习围棋</h2>
+                        <p>选择一个章节开始你的围棋之旅</p>
+                        <div class="welcome-tips">
+                            <div class="tip-item">
+                                <span class="tip-icon">💡</span>
+                                <span>每章都配有练习题</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-icon">🎮</span>
+                                <span>可以实际动手操作</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-icon">📈</span>
+                                <span>完成后解锁下一章</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 练习棋盘 (隐藏) -->
+                <div id="exerciseArea" class="exercise-area" style="display: none;">
+                    <div class="board-wrapper">
+                        <div id="exercise-board" class="go-board"></div>
+                    </div>
+                    <div class="exercise-instructions" id="exerciseInstructions">
+                        <p>按照指示完成练习</p>
+                    </div>
+                    <div class="board-controls">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="resetExercise()">🔄 重置</button>
+                        <button class="btn btn-primary btn-sm" onclick="checkExercise()">✓ 提交答案</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：学习辅助 -->
+            <div class="companion-panel">
+                <div class="panel-header">
+                    <h5>🎯 学习目标</h5>
+                </div>
+                <div id="learningObjectives" class="objectives-list">
+                    <p class="text-muted">选择章节查看目标</p>
+                </div>
+                
+                <div class="panel-header mt-3">
+                    <h5>🐼 学习伙伴</h5>
+                </div>
+                <div class="study-companion">
+                    <div class="companion-mini">
+                        <span class="companion-emoji">🐼</span>
+                        <div class="companion-speech">
+                            <p>"围棋是一门艺术，慢慢来~"</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-header mt-3">
+                    <h5>🏆 成就</h5>
+                </div>
+                <div id="achievements" class="achievements-list">
+                    <div class="achievement-item locked">
+                        <span class="achievement-icon">🌱</span>
+                        <span>初出茅庐</span>
+                    </div>
+                    <div class="achievement-item locked">
+                        <span class="achievement-icon">👶</span>
+                        <span>围棋入门</span>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" id="btn-back-to-tutorials">返回列表</button>
-            <button class="btn btn-primary" id="btn-next-tutorial">下一个教程</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
+    </main>
 
-{% block extra_js %}
-<script src="{{ url_for('static_files', filename='js/go-board.js') }}"></script>
-<script src="{{ url_for('static_files', filename='js/tutorial.js') }}"></script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/go-board.js"></script>
+    <script src="/static/js/tutorial.js"></script>
+</body>
+</html>

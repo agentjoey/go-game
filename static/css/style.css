@@ -421,3 +421,503 @@ body {
         padding: 8px;
     }
 }
+
+/* ==================== 死活题页面 ==================== */
+
+.page-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.filter-section {
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.filter-section .form-select {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+.puzzle-item, .game-item, .chapter-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.puzzle-item:hover, .game-item:hover, .chapter-item:hover {
+    background: rgba(0,0,0,0.02);
+}
+
+.puzzle-item.active, .game-item.active, .chapter-item.active {
+    background: rgba(196, 92, 72, 0.08);
+    border-left: 3px solid var(--cinnabar-red);
+}
+
+.puzzle-item.completed, .chapter-item.completed {
+    opacity: 0.7;
+}
+
+.puzzle-info, .game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.puzzle-title, .chapter-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.puzzle-desc {
+    font-size: 0.8rem;
+    color: var(--mist-gray);
+}
+
+.puzzle-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.tag-kill { background: #ffe0e0; color: #c45c48; }
+.tag-live { background: #e0f0e0; color: #5a8f5a; }
+.tag-capture { background: #e0e8ff; color: #5a7a9c; }
+.tag-easy { background: #e8f5e8; color: #5a8f5a; }
+.tag-medium { background: #fff3e0; color: #d4a03d; }
+.tag-hard { background: #fce4ec; color: #c45c48; }
+
+.stats-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ink-black);
+}
+
+.stat-value.text-success { color: var(--bamboo-green); }
+.stat-value.text-gold { color: var(--gold-foil); }
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--mist-gray);
+}
+
+.puzzle-desc, .game-details {
+    padding: 16px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.hint-section {
+    padding: 16px;
+    background: var(--rice-paper);
+    border-radius: 0 0 16px 16px;
+}
+
+.hint-section h6 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.hint-section ul {
+    list-style: none;
+    font-size: 0.8rem;
+    color: var(--mist-gray);
+}
+
+.hint-section li {
+    padding: 4px 0;
+}
+
+/* ==================== 棋谱回放页面 ==================== */
+
+.game-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-players {
+    font-size: 0.85rem;
+    color: var(--mist-gray);
+}
+
+.game-result {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.game-result.black-win {
+    background: rgba(45, 45, 45, 0.1);
+    color: var(--stone-black);
+}
+
+.game-result.white-win {
+    background: rgba(250, 248, 245, 0.8);
+    color: var(--stone-black);
+    border: 1px solid #d0cdc5;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    max-width: 600px;
+    padding: 0 16px;
+    margin-top: 12px;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.1);
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--cinnabar-red);
+    cursor: pointer;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.detail-label { color: var(--mist-gray); font-size: 0.85rem; }
+.detail-value { font-weight: 500; font-size: 0.9rem; }
+
+.ai-commentary {
+    padding: 16px;
+}
+
+.commentary-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--ink-black);
+}
+
+/* ==================== 教程页面 ==================== */
+
+.tutorial-content-area {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    min-height: 500px;
+}
+
+.tutorial-welcome {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.welcome-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.tutorial-welcome h2 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+}
+
+.tutorial-welcome p {
+    color: var(--mist-gray);
+    margin-bottom: 32px;
+}
+
+.welcome-tips {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+}
+
+.tip-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.tip-icon {
+    font-size: 2rem;
+}
+
+.tip-item span:last-child {
+    font-size: 0.85rem;
+    color: var(--mist-gray);
+}
+
+.progress-section {
+    padding: 16px;
+    background: white;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.progress-label {
+    font-size: 0.8rem;
+    color: var(--mist-gray);
+    margin-bottom: 8px;
+}
+
+.progress-track {
+    height: 8px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bamboo-green), var(--gold-foil));
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    color: var(--mist-gray);
+    text-align: center;
+    margin-top: 8px;
+}
+
+.tutorial-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 24px;
+    color: var(--ink-black);
+}
+
+.chapter-section {
+    margin-bottom: 24px;
+}
+
+.chapter-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--ink-black);
+}
+
+.chapter-section p {
+    line-height: 1.7;
+    color: #444;
+}
+
+.highlight {
+    background: linear-gradient(transparent 60%, rgba(196, 92, 72, 0.2) 60%);
+    padding: 0 4px;
+}
+
+.tip-box {
+    background: var(--rice-paper);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.tip-box.warning {
+    background: #fff4f0;
+}
+
+.tip-icon {
+    font-size: 1.2rem;
+}
+
+.term-list, .rule-list {
+    list-style: none;
+}
+
+.term-list li, .rule-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    line-height: 1.6;
+}
+
+.liberty-demo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.demo-item {
+    text-align: center;
+}
+
+.demo-board {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 12px;
+}
+
+.demo-item p {
+    font-size: 0.9rem;
+}
+
+.board-preview {
+    margin: 16px 0;
+}
+
+.mini-board {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-item {
+    padding: 12px 16px;
+    background: var(--rice-paper);
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.completion-badge {
+    padding: 32px;
+    text-align: center;
+}
+
+.badge-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.text-center { text-align: center; }
+
+.objectives-list {
+    padding: 16px;
+}
+
+.objective-item {
+    padding: 8px 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.study-companion {
+    padding: 16px;
+}
+
+.companion-mini {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.companion-emoji {
+    font-size: 2rem;
+}
+
+.companion-speech {
+    background: var(--rice-paper);
+    padding: 12px;
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.achievements-list {
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.achievement-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px;
+    background: var(--rice-paper);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    min-width: 70px;
+}
+
+.achievement-item.locked {
+    opacity: 0.4;
+}
+
+.achievement-icon {
+    font-size: 1.5rem;
+}
+
+.exercise-area {
+    text-align: center;
+}
+
+.exercise-area .board-wrapper {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.exercise-instructions {
+    margin: 20px 0;
+    font-size: 1rem;
+}
+
+.exercise-area .board-controls {
+    justify-content: center;
+}
+
+.btn-lg {
+    padding: 14px 32px;
+    font-size: 1.1rem;
+}
+
+.btn-success {
+    background: var(--bamboo-green);
+    border: none;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #4a7a4a;
+    color: white;
+}
