@@ -843,6 +843,11 @@ function initGame() {
         boardSize: boardSize,
         companionType: companionType
     });
+    
+    // 默认开启手数显示
+    if (game && game.boardView) {
+        game.boardView.setShowMoveNumbers(true);
+    }
 }
 
 function newGame() {
@@ -888,7 +893,7 @@ function updateCompanionUI() {
 
 // ==================== 手数显示切换 ====================
 
-let moveNumbersVisible = false;
+let moveNumbersVisible = true;
 
 function toggleMoveNumbers() {
     if (!game || !game.boardView) return;

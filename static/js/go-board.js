@@ -12,7 +12,7 @@ class GoBoard {
         this.listeners = [];
         this.hoverCell = null;
         this.animatingCells = [];
-        this.showMoveNumbers = false;
+        this.showMoveNumbers = true;
         this.moveNumbers = [];
         
         for (let i = 0; i < size; i++) {
