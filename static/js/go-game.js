@@ -35,6 +35,11 @@ class GoGame {
             this.handleMove(row, col);
         });
         
+        // 游戏计时器
+        this.gameTimer = null;
+        this.elapsedSeconds = 0;
+        this.initGameTimer();
+        
         this.updateUI();
         this.updateCompanion();
         
@@ -42,6 +47,44 @@ class GoGame {
         setTimeout(() => {
             this.companion.showBubble('normal');
         }, 500);
+    }
+    
+    // 初始化游戏计时器
+    initGameTimer() {
+        this.elapsedSeconds = 0;
+        this.updateTimerDisplay();
+        this.gameTimer = setInterval(() => {
+            if (!this.gameOver) {
+                this.elapsedSeconds++;
+                this.updateTimerDisplay();
+            }
+        }, 1000);
+    }
+    
+    // 更新计时器显示
+    updateTimerDisplay() {
+        const timerEl = document.getElementById('game-timer');
+        if (timerEl) {
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const seconds = this.elapsedSeconds % 60;
+            const formatted = `已用: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerEl.textContent = formatted;
+        }
+    }
+    
+    // 停止计时器
+    stopTimer() {
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
+            this.gameTimer = null;
+        }
+    }
+    
+    // 重置计时器
+    resetTimer() {
+        this.stopTimer();
+        this.elapsedSeconds = 0;
+        this.initGameTimer();
     }
     
     createEmptyBoard() {
@@ -108,6 +151,9 @@ class GoGame {
             row, col, coord,
             captured: captured.length
         });
+        
+        // 记录手数
+        this.boardView.moveNumbers[row][col] = this.moves.length;
         
         // 更新视图
         this.boardView.setBoard(this.board);
@@ -296,6 +342,7 @@ class GoGame {
     resign() {
         if (this.gameOver) return;
         this.gameOver = true;
+        this.stopTimer();
         const winner = this.currentPlayer === BLACK ? '白' : '黑';
         this.showToast(`${winner}方获胜！`);
         
@@ -702,6 +749,7 @@ class GoGame {
     
     endGame() {
         this.gameOver = true;
+        this.stopTimer();
         this.showToast('游戏结束！双方Pass');
         
         // 简单计算胜负
@@ -770,6 +818,9 @@ class GoGame {
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
         this.passes = 0;
+        
+        // 重置计时器
+        this.resetTimer();
         
         this.boardView.setBoard(this.board);
         this.boardView.clearLastMove();

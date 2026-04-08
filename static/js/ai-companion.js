@@ -455,11 +455,20 @@ class AICompanion {
     
     showBubble(type) {
         const msg = this.showMessage(type);
+        // 尝试新布局的气泡区域
+        const bubbleAreaEl = document.getElementById('ai-bubble-area');
         const bubbleEl = document.getElementById('ai-bubble');
+        
         if (bubbleEl) {
+            // 新布局：使用 ai-bubble-text
             bubbleEl.innerHTML = `<span class="emoji">${this.emoji}</span> ${msg}`;
-            bubbleEl.className = `ai-bubble show ${type}`;
+            bubbleEl.className = `ai-bubble-text show ${type}`;
             setTimeout(() => bubbleEl.classList.remove('show'), 3500);
+        } else if (bubbleAreaEl) {
+            // 旧布局兼容
+            bubbleAreaEl.innerHTML = `<span class="emoji">${this.emoji}</span> ${msg}`;
+            bubbleAreaEl.className = `ai-bubble show ${type}`;
+            setTimeout(() => bubbleAreaEl.classList.remove('show'), 3500);
         }
         return msg;
     }

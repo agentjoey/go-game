@@ -12,9 +12,12 @@ class GoBoard {
         this.listeners = [];
         this.hoverCell = null;
         this.animatingCells = [];
+        this.showMoveNumbers = false;
+        this.moveNumbers = [];
         
         for (let i = 0; i < size; i++) {
             this.board.push(new Array(size).fill(0));
+            this.moveNumbers.push(new Array(size).fill(0));
         }
         
         this.init();
@@ -103,6 +106,13 @@ class GoBoard {
                     if (this.correctMarkPos && this.correctMarkPos.row === r && this.correctMarkPos.col === c) {
                         svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.25}" fill="#5a8f5a" stroke="#fff" stroke-width="${cellSize*0.05}"/>`;
                         svg += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.25}" fill="#fff" font-weight="bold">✓</text>`;
+                    }
+
+                    // 手数显示
+                    if (this.showMoveNumbers && this.moveNumbers[r]?.[c]) {
+                        const moveNum = this.moveNumbers[r][c];
+                        const textColor = isBlack ? '#fff' : '#1a1a1a';
+                        svg += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.35}" fill="${textColor}" font-weight="bold">${moveNum}</text>`;
                     }
                 }
             }
@@ -194,6 +204,11 @@ class GoBoard {
     
     clearLastMove() {
         this.lastMove = null;
+        this.render();
+    }
+    
+    setShowMoveNumbers(show) {
+        this.showMoveNumbers = show;
         this.render();
     }
     
