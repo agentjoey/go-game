@@ -126,7 +126,7 @@ function renderReplay() {
     // 初始化棋盘（复用已有实例）
     setTimeout(() => {
         if (!replayBoard) {
-            replayBoard = new GoBoard('replayBoard', 19);
+            replayBoard = new GoBoard('replay-board', 19);
         }
         updateReplayBoard();
     }, 100);

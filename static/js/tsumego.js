@@ -17,7 +17,7 @@ let puzzleBoard;
 
 // 初始化
 async function initTsumego() {
-    puzzleBoard = new GoBoard('puzzleBoard', 9);
+    puzzleBoard = new GoBoard('tsumego-board', 9);
     puzzleBoard.addClickListener(handlePuzzleClick);
     
     await loadPuzzles();
@@ -200,7 +200,7 @@ function selectPuzzle(id) {
 
     // 复用已有的棋盘实例，只更新棋盘数据
     if (!puzzleBoard) {
-        puzzleBoard = new GoBoard('puzzleBoard', 9);
+        puzzleBoard = new GoBoard('tsumego-board', 9);
         puzzleBoard.addClickListener(handlePuzzleClick);
     }
     puzzleBoard.setBoard(JSON.parse(JSON.stringify(currentPuzzle.board)));
