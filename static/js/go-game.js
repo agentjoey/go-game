@@ -528,7 +528,8 @@ class GoGame {
     socraticQuestions = [
         {
             type: 'goal',
-            question: '你想在这块棋达到什么目的？',
+            question: '在棋盘上金色标记的位置落子，你想要达到什么目的？',
+            focus: [4, 4],
             options: [
                 { text: '进攻', emoji: '⚔️' },
                 { text: '防守', emoji: '🛡️' },
@@ -538,7 +539,8 @@ class GoGame {
         },
         {
             type: 'consequence',
-            question: '如果对手在这里落子，会发生什么？',
+            question: '如果对手在金色标记的位置落子，你觉得会发生什么？',
+            focus: [4, 5],
             options: [
                 { text: '被我吃掉', emoji: '😮' },
                 { text: '逃跑成功', emoji: '🏃' },
@@ -548,8 +550,9 @@ class GoGame {
         },
         {
             type: 'compare',
-            question: '这两个位置，哪个更好？为什么？',
-            highlight: [[4, 4], [4, 5]],
+            question: '金色标记的两个位置，哪个更好？为什么？',
+            focus: [[4, 4], [4, 6]],
+            highlight: [[4, 4], [4, 6]],
             options: [
                 { text: '左边那个', emoji: '⬅️' },
                 { text: '右边那个', emoji: '➡️' },
@@ -558,7 +561,8 @@ class GoGame {
         },
         {
             type: 'reverse',
-            question: '如果你是黑棋，会怎么下？',
+            question: '如果你是黑棋，在金色标记的位置会怎么下？',
+            focus: [3, 4],
             options: [
                 { text: '进攻这块', emoji: '⚔️' },
                 { text: '防守自己的棋', emoji: '🛡️' },
@@ -594,11 +598,21 @@ class GoGame {
         if (questionEl) questionEl.innerHTML = `<strong>${q.question}</strong>`;
         if (questionEl) questionEl.className = `socratic-question socratic-type-${q.type}`;
 
-        // 高亮相关区域
+        // 高亮相关区域（持续模式，不自动消失）
         if (q.highlight) {
             q.highlight.forEach(([r, c]) => {
-                this.boardView.highlightArea(r, c);
+                this.boardView.highlightArea(r, c, true);
             });
+        }
+
+        // 设置苏格拉底焦点标记（金色醒目标记）
+        if (q.focus) {
+            if (Array.isArray(q.focus[0])) {
+                // compare 类型：多个焦点，取第一个作为主要焦点标记
+                this.boardView.setSocraticFocus(q.focus[0][0], q.focus[0][1]);
+            } else {
+                this.boardView.setSocraticFocus(q.focus[0], q.focus[1]);
+            }
         }
 
         // 渲染选项
@@ -656,9 +670,9 @@ class GoGame {
         if (panel) panel.style.display = 'none';
         if (controls) controls.style.display = 'flex';
 
-        // 清除高亮
+        // 清除所有高亮和焦点标记
         this.boardView.highlightCells = [];
-        this.boardView.render();
+        this.boardView.clearSocraticFocus();
     }
 
     // 长考检测 (30秒)
@@ -803,6 +817,23 @@ function triggerSocraticMode() { game && game.triggerSocraticMode(); }
 function selectSocraticOption(index) { game && game.selectSocraticOption(index); }
 function socraticSkip() { game && game.socraticSkip(); }
 function socraticVoiceInput() { game && game.socraticVoiceInput(); }
+
+// 更新 AI 棋伴面板 UI
+function updateCompanionUI() {
+    const companionType = document.getElementById('companionType')?.value || 'adai';
+    const emojiEl = document.getElementById('ai-emoji');
+    const nameEl = document.getElementById('ai-name');
+    
+    const companions = {
+        adai: { emoji: '🐼', name: '阿呆' },
+        xiaozhi: { emoji: '🦊', name: '小智' },
+        youyou: { emoji: '🐱', name: '悠悠' }
+    };
+    
+    const companion = companions[companionType] || companions.adai;
+    if (emojiEl) emojiEl.textContent = companion.emoji;
+    if (nameEl) nameEl.textContent = companion.name;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initGame, 200);

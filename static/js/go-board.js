@@ -107,6 +107,24 @@ class GoBoard {
                 }
             }
         }
+
+        // 苏格拉底模式焦点位置 - 金色醒目标记（画在棋子之上，确保始终可见）
+        if (this.socraticFocus) {
+            const fx = (this.socraticFocus.col + 0.5) * cellSize;
+            const fy = (this.socraticFocus.row + 0.5) * cellSize;
+            // 外层虚线圆
+            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.45}" fill="none" stroke="#ffd700" stroke-width="${cellSize*0.06}" stroke-dasharray="${cellSize*0.15},${cellSize*0.08}"/>`;
+            // 内层实线圆
+            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.3}" fill="rgba(255,215,0,0.15)" stroke="#ffd700" stroke-width="${cellSize*0.05}"/>`;
+            // 中心实心圆点
+            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.1}" fill="#ffd700"/>`;
+            // 四个方向小三角装饰
+            const tri = cellSize * 0.06;
+            svg += `<polygon points="${fx},${fy-cellSize*0.38} ${fx-tri},${fy-cellSize*0.3} ${fx+tri},${fy-cellSize*0.3}" fill="#ffd700"/>`;
+            svg += `<polygon points="${fx},${fy+cellSize*0.38} ${fx-tri},${fy+cellSize*0.3} ${fx+tri},${fy+cellSize*0.3}" fill="#ffd700"/>`;
+            svg += `<polygon points="${fx-cellSize*0.38},${fy} ${fx-cellSize*0.3},${fy-tri} ${fx-cellSize*0.3},${fy+tri}" fill="#ffd700"/>`;
+            svg += `<polygon points="${fx+cellSize*0.38},${fy} ${fx+cellSize*0.3},${fy-tri} ${fx+cellSize*0.3},${fy+tri}" fill="#ffd700"/>`;
+        }
         
         svg += `<rect class="hover-layer" x="0" y="0" width="100" height="100" fill="transparent"/>`;
         svg += `</svg>`;
@@ -229,6 +247,7 @@ class GoBoard {
     markingMode = false;
     highlightCells = [];
     correctMarkPos = null;
+    socraticFocus = null;
 
     setQuestionMark(row, col) {
         this.questionMark = { row, col };
@@ -240,7 +259,17 @@ class GoBoard {
         this.render();
     }
 
-    highlightArea(row, col) {
+    setSocraticFocus(row, col) {
+        this.socraticFocus = { row, col };
+        this.render();
+    }
+
+    clearSocraticFocus() {
+        this.socraticFocus = null;
+        this.render();
+    }
+
+    highlightArea(row, col, persistent = false) {
         this.highlightCells = [];
         // 高亮周围3x3区域
         for (let dr = -1; dr <= 1; dr++) {
@@ -254,11 +283,13 @@ class GoBoard {
         }
         this.render();
 
-        // 3秒后清除
-        setTimeout(() => {
-            this.highlightCells = [];
-            this.render();
-        }, 3000);
+        // 非持续模式：3秒后清除
+        if (!persistent) {
+            setTimeout(() => {
+                this.highlightCells = [];
+                this.render();
+            }, 3000);
+        }
     }
 
     showCorrectMark(row, col) {
@@ -271,6 +302,7 @@ class GoBoard {
         this.markingMode = false;
         this.highlightCells = [];
         this.correctMarkPos = null;
+        this.socraticFocus = null;
         this.render();
     }
 

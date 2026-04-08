@@ -1081,13 +1081,13 @@ body {
 
 /* 棋子候选效果 */
 .candidate-stone {
-    opacity: 0.5;
-    animation: pulse 1s ease-in-out infinite;
+    opacity: 0.3;
+    animation: breathe 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(1.1); }
+@keyframes breathe {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.4; }
 }
 
 /* 提子动画 */
