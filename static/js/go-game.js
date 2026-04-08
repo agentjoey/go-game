@@ -498,27 +498,192 @@ class GoGame {
     
     endFeynmanMode() {
         if (!this.feynmanActive) return;
-        
+
         this.feynmanActive = false;
         this.markingMode = false;
         clearInterval(this.feynmanTimer);
-        
+
         // 隐藏UI
         const banner = document.getElementById('feynmanBanner');
         const actions = document.getElementById('feynmanActions');
         const controls = document.getElementById('boardControls');
-        
+
         if (banner) banner.style.display = 'none';
         if (actions) actions.style.display = 'none';
         if (controls) controls.style.display = 'flex';
-        
+
         // 清除标记
         this.boardView.clearFeynmanMarks();
-        
+
         const wrapper = document.getElementById('boardWrapper');
         if (wrapper) wrapper.classList.remove('marking-mode', 'feynman-active');
-        
+
         document.getElementById('markingHint')?.remove();
+    }
+
+    // ==================== 苏格拉底模式 ====================
+
+    socraticActive = false;
+    socraticQuestionType = 0;
+    socraticQuestions = [
+        {
+            type: 'goal',
+            question: '你想在这块棋达到什么目的？',
+            options: [
+                { text: '进攻', emoji: '⚔️' },
+                { text: '防守', emoji: '🛡️' },
+                { text: '围地', emoji: '🏔️' },
+                { text: '切断', emoji: '✂️' }
+            ]
+        },
+        {
+            type: 'consequence',
+            question: '如果对手在这里落子，会发生什么？',
+            options: [
+                { text: '被我吃掉', emoji: '😮' },
+                { text: '逃跑成功', emoji: '🏃' },
+                { text: '形成对杀', emoji: '⚔️' },
+                { text: '我不确定', emoji: '🤔' }
+            ]
+        },
+        {
+            type: 'compare',
+            question: '这两个位置，哪个更好？为什么？',
+            highlight: [[4, 4], [4, 5]],
+            options: [
+                { text: '左边那个', emoji: '⬅️' },
+                { text: '右边那个', emoji: '➡️' },
+                { text: '差不多', emoji: '⚖️' }
+            ]
+        },
+        {
+            type: 'reverse',
+            question: '如果你是黑棋，会怎么下？',
+            options: [
+                { text: '进攻这块', emoji: '⚔️' },
+                { text: '防守自己的棋', emoji: '🛡️' },
+                { text: '扩大地盘', emoji: '🏔️' }
+            ]
+        }
+    ];
+
+    triggerSocraticMode() {
+        if (this.socraticActive || this.feynmanActive) return;
+
+        this.socraticActive = true;
+        this.socraticQuestionType = Math.floor(Math.random() * this.socraticQuestions.length);
+        this.showSocraticQuestion();
+
+        // 显示 UI
+        const panel = document.getElementById('socraticPanel');
+        const controls = document.getElementById('boardControls');
+        if (panel) panel.style.display = 'block';
+        if (controls) controls.style.display = 'none';
+
+        // AI 气泡
+        this.companion.showBubble('socratic');
+    }
+
+    showSocraticQuestion() {
+        const q = this.socraticQuestions[this.socraticQuestionType];
+        const titleEl = document.getElementById('socraticTitle');
+        const questionEl = document.getElementById('socraticQuestion');
+        const optionsEl = document.getElementById('socraticOptions');
+
+        if (titleEl) titleEl.textContent = '苏格拉底模式 - 一起思考...';
+        if (questionEl) questionEl.innerHTML = `<strong>${q.question}</strong>`;
+        if (questionEl) questionEl.className = `socratic-question socratic-type-${q.type}`;
+
+        // 高亮相关区域
+        if (q.highlight) {
+            q.highlight.forEach(([r, c]) => {
+                this.boardView.highlightArea(r, c);
+            });
+        }
+
+        // 渲染选项
+        if (optionsEl) {
+            let html = '';
+            q.options.forEach((opt, i) => {
+                html += `<div class="socratic-option" onclick="selectSocraticOption(${i})">
+                    <span>${opt.emoji}</span><br>${opt.text}
+                </div>`;
+            });
+            optionsEl.innerHTML = html;
+        }
+    }
+
+    selectSocraticOption(index) {
+        const q = this.socraticQuestions[this.socraticQuestionType];
+        const opt = q.options[index];
+
+        // 标记选中
+        document.querySelectorAll('.socratic-option').forEach((el, i) => {
+            if (i === index) el.classList.add('selected');
+        });
+
+        // AI 反馈
+        const responses = [
+            '这个角度很有趣！还有别的想法吗？',
+            '有意思！能说说为什么这么选吗？',
+            '很好！再想想还有没有其他可能？',
+            '你的思路不错，试试从这个角度思考？'
+        ];
+        this.showToast(responses[Math.floor(Math.random() * responses.length)]);
+
+        // 2秒后关闭
+        setTimeout(() => this.endSocraticMode(), 2000);
+    }
+
+    socraticSkip() {
+        this.endSocraticMode();
+        this.showToast('随时可以继续思考哦~');
+    }
+
+    socraticVoiceInput() {
+        // TODO: 实现语音输入
+        this.showToast('语音功能开发中...');
+    }
+
+    endSocraticMode() {
+        if (!this.socraticActive) return;
+
+        this.socraticActive = false;
+
+        // 隐藏 UI
+        const panel = document.getElementById('socraticPanel');
+        const controls = document.getElementById('boardControls');
+        if (panel) panel.style.display = 'none';
+        if (controls) controls.style.display = 'flex';
+
+        // 清除高亮
+        this.boardView.highlightCells = [];
+        this.boardView.render();
+    }
+
+    // 长考检测 (30秒)
+    thinkingStartTime = null;
+
+    startThinkingTimer() {
+        this.thinkingStartTime = Date.now();
+        this.thinkingTimer = setInterval(() => {
+            if (this.thinkingStartTime && Date.now() - this.thinkingStartTime > 30000) {
+                // 长考超过30秒，提示苏格拉底模式
+                if (!this.socraticActive && !this.feynmanActive) {
+                    this.companion.showBubble('encourage');
+                    const hint = document.createElement('div');
+                    hint.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(90,122,156,0.95);color:#fff;padding:12px 24px;border-radius:24px;font-size:15px;z-index:9999;';
+                    hint.textContent = '💡 思考太久了？试试点击"求助"按钮~';
+                    document.body.appendChild(hint);
+                    setTimeout(() => hint.remove(), 3000);
+                }
+                this.thinkingStartTime = null; // 只提示一次
+            }
+        }, 5000);
+    }
+
+    resetThinkingTimer() {
+        this.thinkingStartTime = null;
     }
     
     endGame() {
@@ -632,6 +797,12 @@ function undo() { game && game.undo(); }
 function feynmanHint() { game && game.feynmanHint(); }
 function feynmanMarkBetter() { game && game.feynmanMarkBetter(); }
 function feynmanSkip() { game && game.feynmanSkip(); }
+
+// 苏格拉底模式全局方法
+function triggerSocraticMode() { game && game.triggerSocraticMode(); }
+function selectSocraticOption(index) { game && game.selectSocraticOption(index); }
+function socraticSkip() { game && game.socraticSkip(); }
+function socraticVoiceInput() { game && game.socraticVoiceInput(); }
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initGame, 200);

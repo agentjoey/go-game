@@ -273,6 +273,101 @@ class GoBoard {
         this.correctMarkPos = null;
         this.render();
     }
+
+    // ==================== 移动端手势支持 ====================
+
+    scale = 1;
+    lastTouchDist = 0;
+    touchStartPos = null;
+    longPressTimer = null;
+
+    enableTouchGestures() {
+        if (!this.container) return;
+
+        const svg = this.container.querySelector('svg');
+        if (!svg) return;
+
+        // 防止默认触摸行为
+        svg.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                this.touchStartPos = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                };
+
+                // 长按检测 (500ms)
+                this.longPressTimer = setTimeout(() => {
+                    this.handleLongPress(e);
+                }, 500);
+            } else if (e.touches.length === 2) {
+                // 双指缩放开始
+                this.lastTouchDist = this.getTouchDistance(e.touches);
+                clearTimeout(this.longPressTimer);
+            }
+        }, { passive: false });
+
+        svg.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                // 双指缩放
+                const dist = this.getTouchDistance(e.touches);
+                const delta = dist - this.lastTouchDist;
+
+                if (Math.abs(delta) > 5) {
+                    this.scale += delta * 0.005;
+                    this.scale = Math.max(0.5, Math.min(2, this.scale));
+                    svg.style.transform = `scale(${this.scale})`;
+                    this.lastTouchDist = dist;
+                }
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        svg.addEventListener('touchend', (e) => {
+            clearTimeout(this.longPressTimer);
+
+            if (e.touches.length === 0) {
+                // 检测短按点击
+                if (this.touchStartPos && Date.now() - this.touchStartPos.time < 300) {
+                    // 短按处理 - 在 touchstart 中已经通过 click 处理
+                }
+            }
+
+            this.touchStartPos = null;
+        });
+
+        // 单指点击处理
+        svg.addEventListener('click', (e) => {
+            // 如果是触摸后移动过，不处理点击
+            if (this.isMobile) return;
+        });
+
+        this.isMobile = true;
+    }
+
+    getTouchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    handleLongPress(e) {
+        // 长按显示分析
+        const rect = this.container.getBoundingClientRect();
+        const col = Math.floor((e.touches[0].clientX - rect.left) / (rect.width / this.size));
+        const row = Math.floor((e.touches[0].clientY - rect.top) / (rect.height / this.size));
+
+        if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
+            // 触发长按回调（如果有）
+            if (this.onLongPress) {
+                this.onLongPress(row, col);
+            }
+        }
+    }
+
+    setOnLongPress(callback) {
+        this.onLongPress = callback;
+    }
 }
 
 window.GoBoard = GoBoard;

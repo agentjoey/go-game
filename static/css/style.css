@@ -1282,3 +1282,386 @@ body {
     50% { transform: translate(-50%, -50%) scale(1.3); }
     100% { transform: translate(-50%, -50%) scale(1); }
 }
+
+/* ==================== 苏格拉底模式 ==================== */
+
+.socratic-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-left: 4px solid #5a7a9c;
+}
+
+.socratic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.socratic-icon {
+    font-size: 1.5rem;
+}
+
+.socratic-title {
+    font-weight: 700;
+    color: #5a7a9c;
+}
+
+.socratic-question {
+    background: linear-gradient(135deg, rgba(90,122,156,0.1), rgba(90,143,90,0.05));
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+.socratic-question strong {
+    color: #5a7a9c;
+}
+
+.socratic-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.socratic-option {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    background: var(--rice-paper);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.socratic-option:hover {
+    border-color: #5a7a9c;
+    background: rgba(90,122,156,0.1);
+}
+
+.socratic-option.selected {
+    background: #5a7a9c;
+    color: white;
+    border-color: #5a7a9c;
+}
+
+.socratic-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Socratic mode specific question types */
+.socratic-type-goal .socratic-question::before {
+    content: '🎯 ';
+}
+
+.socratic-type-consequence .socratic-question::before {
+    content: '🔮 ';
+}
+
+.socratic-type-compare .socratic-question::before {
+    content: '⚖️ ';
+}
+
+.socratic-type-reverse .socratic-question::before {
+    content: '🔄 ';
+}
+
+/* ==================== 移动端适配 ==================== */
+
+@media (max-width: 768px) {
+    /* 全局调整 */
+    body {
+        font-size: 14px;
+    }
+    
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    /* 导航栏 */
+    .navbar {
+        padding: 8px 12px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .nav-links {
+        gap: 8px;
+    }
+    
+    .nav-links a {
+        font-size: 0.85rem;
+        padding: 4px 8px;
+    }
+    
+    /* 游戏布局 - 移动端单列 */
+    .game-layout {
+        flex-direction: column !important;
+        gap: 12px;
+    }
+    
+    .companion-panel,
+    .moves-panel {
+        display: none; /* 移动端隐藏侧边栏 */
+    }
+    
+    .board-area {
+        order: 1;
+    }
+    
+    /* 棋盘区域 */
+    .board-wrapper {
+        max-width: 100%;
+        padding: 8px;
+    }
+    
+    .go-board {
+        width: 100%;
+        padding-bottom: 100%; /* 保持1:1比例 */
+    }
+    
+    /* 棋盘控制按钮 */
+    .board-controls {
+        position: fixed;
+        bottom: 60px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 8px 12px;
+        display: flex;
+        justify-content: space-around;
+        gap: 8px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 100;
+    }
+    
+    .board-controls .btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    /* 底部导航 */
+    .bottom-nav {
+        display: flex !important;
+        height: 56px;
+    }
+    
+    /* Dashboard 移动端 */
+    .dashboard {
+        padding-bottom: 80px;
+    }
+    
+    .dashboard-header {
+        padding: 12px 0;
+    }
+    
+    .welcome-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+    }
+    
+    .welcome-text h1 {
+        font-size: 1.1rem;
+    }
+    
+    .streak-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .streak-progress {
+        width: 100%;
+    }
+    
+    .quest-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .quest-card {
+        padding: 12px;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-companion-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px;
+    }
+    
+    .ai-avatar-large {
+        width: 60px;
+        height: 60px;
+        font-size: 2.5rem;
+    }
+    
+    .ai-actions {
+        flex-direction: row;
+        width: 100%;
+    }
+    
+    .ai-action-btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+    
+    /* 复盘页面移动端 */
+    .review-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .review-board-area {
+        padding: 12px;
+    }
+    
+    .playback-controls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .playback-controls button {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    /* 死活题移动端 */
+    .tsumego-layout {
+        flex-direction: column;
+    }
+    
+    .puzzle-desc {
+        order: 2;
+        margin-top: 12px;
+    }
+    
+    /* 费曼/苏格拉底模式移动端 */
+    .feynman-banner,
+    .socratic-panel {
+        margin: 8px;
+        padding: 12px;
+    }
+    
+    .feynman-actions,
+    .socratic-options {
+        flex-direction: column;
+    }
+    
+    .feynman-actions .btn,
+    .socratic-option {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    /* Toast 移动端 */
+    .tsumego-toast {
+        bottom: 80px !important;
+        left: 12px !important;
+        right: 12px !important;
+        transform: none !important;
+        width: auto !important;
+    }
+    
+    /* AI 气泡移动端 */
+    .ai-bubble {
+        max-width: 85%;
+        font-size: 0.9rem;
+        padding: 10px 14px;
+    }
+    
+    /* 禁止选中，防止双击选中 */
+    .go-board,
+    .board-wrapper {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* 平板适配 */
+    .board-wrapper {
+        max-width: 480px;
+    }
+    
+    .companion-panel {
+        width: 200px;
+    }
+    
+    .moves-panel {
+        width: 180px;
+    }
+}
+
+/* 触摸反馈 */
+@media (hover: none) {
+    .quest-card:active,
+    .highlight-card:active,
+    .socratic-option:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+    
+    .btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* 落子确认（移动端防误触） */
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.confirm-box {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 280px;
+    margin: 0 16px;
+}
+
+.confirm-box h4 {
+    margin: 0 0 16px 0;
+}
+
+.confirm-box .btn-group {
+    display: flex;
+    gap: 12px;
+}
+
+.confirm-box .btn {
+    flex: 1;
+}

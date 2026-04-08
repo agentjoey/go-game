@@ -91,12 +91,26 @@
                     <button class="btn btn-outline-secondary btn-sm" onclick="undo()">↩️ 悔棋</button>
                     <button class="btn btn-outline-secondary btn-sm" onclick="passTurn()">Pass</button>
                     <button class="btn btn-outline-danger btn-sm" onclick="resign()">认输</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="triggerSocraticMode()">💡 求助</button>
                 </div>
                 <!-- 费曼模式操作按钮 -->
                 <div class="feynman-actions" id="feynmanActions" style="display: none;">
                     <button class="btn btn-outline-primary btn-sm" onclick="feynmanHint()">💡 提示</button>
                     <button class="btn btn-primary btn-sm" onclick="feynmanMarkBetter()">🎯 我认为这里更好</button>
                     <button class="btn btn-outline-secondary btn-sm" onclick="feynmanSkip()">⏭️ 跳过</button>
+                </div>
+                <!-- 苏格拉底模式 -->
+                <div class="socratic-panel" id="socraticPanel" style="display: none;">
+                    <div class="socratic-header">
+                        <span class="socratic-icon">🔍</span>
+                        <span class="socratic-title" id="socraticTitle">苏格拉底模式 - 一起思考...</span>
+                    </div>
+                    <div class="socratic-question" id="socraticQuestion"></div>
+                    <div class="socratic-options" id="socraticOptions"></div>
+                    <div class="socratic-actions">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="socraticSkip()">⏭️ 跳过</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="socraticVoiceInput()">🎤 语音回答</button>
+                    </div>
                 </div>
             </div>
 

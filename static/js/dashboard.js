@@ -169,18 +169,23 @@ function incrementStreak() {
     streak++;
     localStorage.setItem('streak_days', streak.toString());
     localStorage.setItem('last_played_date', today);
-    
+
     // 显示庆祝动画
     showStreakCelebration(streak);
+
+    // 连胜3天以上触发火焰特效
+    if (streak >= 3) {
+        setTimeout(() => showFireEffect(streak), 500);
+    }
 }
 
 // 连胜庆祝动画
 function showStreakCelebration(streak) {
     const banner = document.getElementById('streakBanner');
-    
+
     // 添加庆祝类
     banner.classList.add('celebrating');
-    
+
     // 创建粒子效果
     for (let i = 0; i < 20; i++) {
         const particle = document.createElement('div');
@@ -196,15 +201,136 @@ function showStreakCelebration(streak) {
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${banner.getBoundingClientRect().top}px`;
         document.body.appendChild(particle);
-        
+
         setTimeout(() => particle.remove(), 1500);
     }
-    
+
     // 3秒后移除庆祝状态
     setTimeout(() => {
         banner.classList.remove('celebrating');
     }, 3000);
 }
+
+// 连胜火焰特效 (3天以上触发)
+function showFireEffect(streak) {
+    if (streak < 3) return;
+
+    // 创建火焰容器
+    const fireContainer = document.createElement('div');
+    fireContainer.id = 'fireEffect';
+    fireContainer.style.cssText = `
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        pointer-events: none;
+        z-index: 9998;
+        overflow: hidden;
+    `;
+    document.body.appendChild(fireContainer);
+
+    // 创建火焰粒子
+    const createFireParticle = () => {
+        if (!document.getElementById('fireEffect')) return;
+
+        const particle = document.createElement('div');
+        const size = 10 + Math.random() * 20;
+        const colors = ['#ff6b6b', '#ff9a56', '#ffcc00', '#ff4757'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        particle.style.cssText = `
+            position: absolute;
+            bottom: -20px;
+            width: ${size}px;
+            height: ${size * 1.5}px;
+            background: linear-gradient(to top, ${color}, transparent);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            left: ${Math.random() * 100}%;
+            animation: fireRise ${1.5 + Math.random()}s ease-out forwards;
+            opacity: ${0.6 + Math.random() * 0.4};
+        `;
+
+        fireContainer.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 3000);
+    };
+
+    // 持续生成火焰粒子
+    const fireInterval = setInterval(() => {
+        for (let i = 0; i < 3; i++) {
+            createFireParticle();
+        }
+    }, 100);
+
+    // 显示连胜文字
+    const streakText = document.createElement('div');
+    streakText.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ff6b6b;
+        text-shadow: 0 0 20px rgba(255,107,107,0.8), 0 0 40px rgba(255,107,107,0.4);
+        animation: streakGlow 1s ease-in-out infinite alternate, fadeInUp 0.5s ease-out;
+        z-index: 9999;
+        pointer-events: none;
+    `;
+    streakText.textContent = `🔥 连胜 ${streak} 天！`;
+    document.body.appendChild(streakText);
+
+    // 5秒后停止火焰
+    setTimeout(() => {
+        clearInterval(fireInterval);
+        streakText.style.opacity = '0';
+        streakText.style.transition = 'opacity 1s';
+        setTimeout(() => {
+            streakText.remove();
+            fireContainer.remove();
+        }, 1000);
+    }, 5000);
+}
+
+// 添加火焰动画 CSS
+const fireStyle = document.createElement('style');
+fireStyle.textContent = `
+    @keyframes fireRise {
+        0% {
+            transform: translateY(0) scale(1) rotate(0deg);
+            opacity: 0.8;
+        }
+        50% {
+            opacity: 0.6;
+        }
+        100% {
+            transform: translateY(-200px) scale(0.5) rotate(20deg);
+            opacity: 0;
+        }
+    }
+
+    @keyframes streakGlow {
+        from {
+            text-shadow: 0 0 20px rgba(255,107,107,0.8), 0 0 40px rgba(255,107,107,0.4);
+        }
+        to {
+            text-shadow: 0 0 30px rgba(255,107,107,1), 0 0 60px rgba(255,107,107,0.6), 0 0 80px rgba(255,107,107,0.3);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+`;
+document.head.appendChild(fireStyle);
 
 // 渲染最近对局
 function renderRecentGames() {

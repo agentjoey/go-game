@@ -55,6 +55,11 @@ def records():
     """棋谱管理"""
     return render_template('records.html')
 
+@app.route('/review')
+def review():
+    """对局复盘"""
+    return render_template('review.html')
+
 @app.route('/api/tsumego/list')
 def api_tsumego_list():
     """获取死活题列表"""
