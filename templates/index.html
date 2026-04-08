@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 英雄区 -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>开启你的<span class="highlight">围棋</span>之旅</h1>
+            <p class="hero-subtitle">专为青少年设计的围棋学习平台</p>
+            <p class="hero-description">
+                从零基础开始，通过有趣的互动教程、丰富的死活题练习、
+                自由对弈和棋谱管理，轻松掌握围棋的奥妙。
+            </p>
+            <div class="hero-buttons">
+                <a href="/tutorial" class="btn btn-primary">
+                    <span>📚</span> 开始学习
+                </a>
+                <a href="/play" class="btn btn-secondary">
+                    <span>⚫</span> 开始对弈
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="go-board-preview">
+                <svg viewBox="0 0 200 200" class="mini-board">
+                    <!-- 棋盘背景 -->
+                    <rect x="10" y="10" width="180" height="180" fill="var(--board-color)" rx="4"/>
+                    <!-- 网格线 -->
+                    <g stroke="var(--board-line)" stroke-width="1.5">
+                        {% for i in range(9) %}
+                        <line x1="30" y1="{{ 30 + i * 20 }}" x2="170" y2="{{ 30 + i * 20 }}"/>
+                        <line x1="{{ 30 + i * 20 }}" y1="30" x2="{{ 30 + i * 20 }}" y2="170"/>
+                        {% endfor %}
+                    </g>
+                    <!-- 星位 -->
+                    <g fill="var(--board-line)">
+                        <circle cx="70" cy="70" r="2"/>
+                        <circle cx="70" cy="130" r="2"/>
+                        <circle cx="130" cy="70" r="2"/>
+                        <circle cx="130" cy="130" r="2"/>
+                        <circle cx="100" cy="100" r="2"/>
+                    </g>
+                    <!-- 示例棋子 -->
+                    <circle cx="70" cy="70" r="8" fill="var(--black-stone)"/>
+                    <circle cx="90" cy="70" r="8" fill="var(--white-stone)"/>
+                    <circle cx="70" cy="90" r="8" fill="var(--white-stone)"/>
+                    <circle cx="110" cy="90" r="8" fill="var(--black-stone)"/>
+                    <circle cx="130" cy="110" r="8" fill="var(--black-stone)"/>
+                    <circle cx="110" cy="130" r="8" fill="var(--white-stone)"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path fill="var(--bg-secondary)" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"/>
+        </svg>
+    </div>
+</section>
+
+<!-- 功能卡片区 -->
+<section class="features">
+    <div class="section-header">
+        <h2>🎯 学习功能</h2>
+        <p>全方位的围棋学习体验</p>
+    </div>
+    <div class="feature-grid">
+        <a href="/tutorial" class="feature-card">
+            <div class="feature-icon">📚</div>
+            <h3>互动教程</h3>
+            <p>从零开始，8个章节循序渐进<br>图文结合，轻松入门围棋</p>
+            <span class="feature-link">开始学习 →</span>
+        </a>
+        <a href="/tsumego" class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>死活题练习</h3>
+            <p>50道精选死活题<br>吃子、做活、对杀全覆盖</p>
+            <span class="feature-link">开始练习 →</span>
+        </a>
+        <a href="/play" class="feature-card">
+            <div class="feature-icon">⚫</div>
+            <h3>自由对弈</h3>
+            <p>精美的19路棋盘<br>支持人机对弈和双人模式</p>
+            <span class="feature-link">开始对弈 →</span>
+        </a>
+        <a href="/records" class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3>棋谱管理</h3>
+            <p>保存SGF格式棋谱<br>支持回放和分享</p>
+            <span class="feature-link">管理棋谱 →</span>
+        </a>
+    </div>
+</section>
+
+<!-- 学习进度区 -->
+<section class="progress-section">
+    <div class="section-header">
+        <h2>📊 你的学习进度</h2>
+    </div>
+    <div class="progress-cards">
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-icon">📚</span>
+                <span class="progress-label">教程进度</span>
+            </div>
+            <div class="progress-value" id="tutorial-progress">0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="tutorial-progress-bar" style="width: 0%"></div>
+            </div>
+            <p class="progress-detail">已完成 <span id="tutorial-completed">0</span>/8 个教程</p>
+        </div>
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-icon">🎯</span>
+                <span class="progress-label">死活题正确率</span>
+            </div>
+            <div class="progress-value" id="tsumego-accuracy">0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="tsumego-progress-bar" style="width: 0%"></div>
+            </div>
+            <p class="progress-detail">已完成 <span id="tsumego-completed">0</span>/50 道题</p>
+        </div>
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-icon">⚫</span>
+                <span class="progress-label">棋谱收藏</span>
+            </div>
+            <div class="progress-value" id="records-count">0</div>
+            <p class="progress-detail">已保存 <span id="records-saved">0</span> 局棋谱</p>
+        </div>
+    </div>
+</section>
+
+<!-- 开始行动区 -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2>准备好开始学习了吗？</h2>
+        <p>无论你是零基础还是有一定经验，这里都有适合你的内容</p>
+        <div class="cta-buttons">
+            <a href="/tutorial" class="btn btn-primary btn-large">
+                <span>🚀</span> 立即开始
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static_files', filename='js/home.js') }}"></script>
+{% endblock %}

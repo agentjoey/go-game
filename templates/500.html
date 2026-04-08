@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误 - Go Learning{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content">
+        <div class="error-icon">🔧</div>
+        <h1>500</h1>
+        <h2>服务器错误</h2>
+        <p>抱歉，服务器遇到了问题。请稍后再试。</p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <span>🏠</span> 返回首页
+            </a>
+            <button onclick="location.reload()" class="btn btn-secondary">
+                <span>🔄</span> 刷新页面
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

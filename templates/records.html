@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}棋谱管理 - Go Learning{% endblock %}
+
+{% block content %}
+<div class="records-page">
+    <!-- 侧边栏 -->
+    <aside class="records-sidebar">
+        <div class="panel stats-panel">
+            <h3>📊 棋谱统计</h3>
+            <div class="stat-item">
+                <span class="stat-label">总棋谱数</span>
+                <span class="stat-value" id="total-records">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">本月新增</span>
+                <span class="stat-value" id="monthly-records">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">总对局数</span>
+                <span class="stat-value" id="total-games">0</span>
+            </div>
+        </div>
+
+        <div class="panel import-panel">
+            <h3>📥 导入棋谱</h3>
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">📁</div>
+                <p>拖拽SGF文件到这里</p>
+                <p class="upload-hint">或点击选择文件</p>
+                <input type="file" id="sgf-file-input" accept=".sgf" hidden>
+            </div>
+            <button class="btn btn-secondary btn-block" id="btn-import-demo">
+                <span>🎮</span> 导入示例棋谱
+            </button>
+        </div>
+
+        <div class="panel export-panel">
+            <h3>📤 导出数据</h3>
+            <button class="btn btn-secondary btn-block" id="btn-export-all">
+                <span>💾</span> 导出所有棋谱
+            </button>
+            <button class="btn btn-danger btn-block" id="btn-clear-all">
+                <span>🗑️</span> 清空所有数据
+            </button>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <div class="records-main">
+        <!-- 搜索和筛选 -->
+        <div class="records-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-records" placeholder="搜索棋谱标题...">
+            </div>
+            <div class="filter-group">
+                <select id="sort-records">
+                    <option value="newest">最新优先</option>
+                    <option value="oldest">最早优先</option>
+                    <option value="name">按名称</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 棋谱列表 -->
+        <div class="records-list" id="records-list">
+            <!-- 动态生成 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <h3>暂无棋谱</h3>
+            <p>开始一场对弈并保存棋谱吧！</p>
+            <a href="/play" class="btn btn-primary">
+                <span>⚫</span> 开始对弈
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 棋谱详情弹窗 -->
+<div class="modal" id="record-detail-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="detail-title">棋谱详情</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="record-detail-container">
+                <div class="replay-board-wrapper">
+                    <div id="replay-board" class="go-board replay-board"></div>
+                    
+                    <!-- 回放控制 -->
+                    <div class="replay-controls">
+                        <button class="btn-icon" id="btn-replay-first" title="第一步">
+                            <span>⏮️</span>
+                        </button>
+                        <button class="btn-icon" id="btn-replay-prev" title="上一步">
+                            <span>⏪</span>
+                        </button>
+                        <button class="btn-icon" id="btn-replay-play" title="播放/暂停">
+                            <span>▶️</span>
+                        </button>
+                        <button class="btn-icon" id="btn-replay-next" title="下一步">
+                            <span>⏩</span>
+                        </button>
+                        <button class="btn-icon" id="btn-replay-last" title="最后一步">
+                            <span>⏭️</span>
+                        </button>
+                        <div class="replay-progress">
+                            <input type="range" id="replay-slider" min="0" max="100" value="0">
+                            <span id="replay-position">0 / 0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="record-info-panel">
+                    <div class="info-section">
+                        <h4>对局信息</h4>
+                        <div class="info-item">
+                            <span class="info-label">黑棋</span>
+                            <span class="info-value" id="detail-black">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">白棋</span>
+                            <span class="info-value" id="detail-white">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">结果</span>
+                            <span class="info-value" id="detail-result">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">棋盘</span>
+                            <span class="info-value" id="detail-size">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">日期</span>
+                            <span class="info-value" id="detail-date">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>手数列表</h4>
+                        <div class="moves-list-container" id="detail-moves-list">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="info-section" id="detail-desc-section">
+                        <h4>备注</h4>
+                        <p id="detail-desc">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" id="btn-delete-record">删除</button>
+            <button class="btn btn-secondary" id="btn-download-sgf">下载SGF</button>
+            <button class="btn btn-primary" id="btn-close-detail">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal" id="delete-confirm-modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h3>⚠️ 确认删除</h3>
+        </div>
+        <div class="modal-body">
+            <p>确定要删除这个棋谱吗？此操作不可撤销。</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="btn-cancel-delete">取消</button>
+            <button class="btn btn-danger" id="btn-confirm-delete">删除</button>
+        </div>
+    </div>
+</div>
+
+<!-- 清空确认弹窗 -->
+<div class="modal" id="clear-all-modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h3>⚠️ 确认清空</h3>
+        </div>
+        <div class="modal-body">
+            <p>确定要清空所有棋谱数据吗？此操作不可撤销。</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="btn-cancel-clear">取消</button>
+            <button class="btn btn-danger" id="btn-confirm-clear">清空</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static_files', filename='js/board.js') }}"></script>
+<script src="{{ url_for('static_files', filename='js/sgf.js') }}"></script>
+<script src="{{ url_for('static_files', filename='js/records.js') }}"></script>
+{% endblock %}

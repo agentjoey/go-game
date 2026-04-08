@@ -1,0 +1,427 @@
+{
+  "version": "1.0",
+  "total": 8,
+  "tutorials": [
+    {
+      "id": 1,
+      "title": "围棋简介",
+      "subtitle": "认识围棋",
+      "description": "了解围棋的历史、文化和基本规则",
+      "estimated_time": "10分钟",
+      "difficulty": "beginner",
+      "icon": "📜",
+      "steps": [
+        {
+          "id": 1,
+          "title": "什么是围棋",
+          "content": "围棋起源于中国，已有四千多年的历史，是世界上最古老的棋类游戏之一。围棋使用方形格状棋盘及黑白二色圆形棋子进行对弈，双方在棋盘上交替落子，以围地多者为胜。",
+          "image": "intro_board",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "围棋的历史",
+          "content": "围棋相传为尧帝所作，春秋战国时期已有记载。围棋与琴、书、画并称为'四艺'，是中国传统文化的瑰宝。如今围棋已传播到全世界，成为国际性的智力运动。",
+          "image": "history",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "围棋的益处",
+          "content": "学习围棋可以：\n• 锻炼逻辑思维能力\n• 提高专注力和耐心\n• 培养大局观和战略意识\n• 增强计算能力和记忆力\n• 学会面对胜负的心态",
+          "image": "benefits",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "开始你的围棋之旅",
+          "content": "围棋规则简单，变化却无穷无尽。就像学习走路一样，从第一步开始，慢慢你就会跑得越来越快。准备好开始了吗？",
+          "image": "ready",
+          "interactive": true,
+          "exercise": {
+            "type": "quiz",
+            "question": "围棋起源于哪个国家？",
+            "options": ["日本", "韩国", "中国", "美国"],
+            "answer": 2,
+            "explanation": "围棋起源于中国，已有四千多年的历史。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "棋盘与落子",
+      "subtitle": "认识棋盘",
+      "description": "学习棋盘的结构和落子的方法",
+      "estimated_time": "15分钟",
+      "difficulty": "beginner",
+      "icon": "⚫",
+      "steps": [
+        {
+          "id": 1,
+          "title": "认识棋盘",
+          "content": "标准围棋棋盘是19×19的方格，共有361个交叉点。初学者也可以使用9×9或13×13的小棋盘。棋盘上有9个特殊的点称为'星位'，中央的星位叫'天元'。",
+          "image": "board",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "棋盘的坐标",
+          "content": "棋盘的横线从下到上用数字1-19表示，竖线从左到右用字母A-T（不含I）表示。比如'C4'就是竖线C和横线4的交叉点。这样我们就能准确地描述每个位置了。",
+          "image": "coordinates",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "认识棋子",
+          "content": "围棋棋子分为黑白两色，黑棋181颗，白棋180颗。黑棋先行，双方轮流在交叉点上落子。棋子落下后不能移动，除非被吃掉。",
+          "image": "stones",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "试试看",
+          "content": "现在让我们在棋盘上放几颗棋子试试！点击交叉点即可落子，黑棋先行。",
+          "image": "practice",
+          "interactive": true,
+          "exercise": {
+            "type": "play",
+            "board_size": 9,
+            "instructions": "在棋盘的星位（标记点）放置一颗黑子",
+            "targets": [[3, 3], [3, 7], [7, 3], [7, 7], [5, 5]],
+            "required_stones": 1,
+            "success_message": "很好！这就是星位，是棋盘上的重要位置。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "气的概念",
+      "subtitle": "生命之源",
+      "description": "学习围棋中最重要的概念——气",
+      "estimated_time": "20分钟",
+      "difficulty": "beginner",
+      "icon": "💨",
+      "steps": [
+        {
+          "id": 1,
+          "title": "什么是气",
+          "content": "在围棋中，'气'是指棋子或棋块周围直接相邻的空交叉点。气就像是棋子的'呼吸'，没有气的棋子会被提掉（吃掉）。这是围棋最基本的概念！",
+          "image": "liberty",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "单颗棋子的气",
+          "content": "一颗棋子在棋盘中央有4口气，在边上有3口气，在角上只有2口气。气越少越危险！这就是为什么角上最容易被吃，中央最难被吃。",
+          "image": "single_liberty",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "棋块的气",
+          "content": "当同色棋子直线相连时，就形成了一个棋块。棋块共享所有的气。比如两颗相连的棋子，它们的气是合并计算的。计算气的时候要看整个棋块！",
+          "image": "group_liberty",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "数气练习",
+          "content": "让我们来数一数黑棋有几口气。记住：只算空着的交叉点，而且要相邻！",
+          "image": "count_liberty",
+          "interactive": true,
+          "exercise": {
+            "type": "count",
+            "board_size": 9,
+            "setup": {
+              "black": [[4, 4]],
+              "white": []
+            },
+            "question": "这颗黑棋有几口气？",
+            "answer": 4,
+            "explanation": "棋子在中央有上、下、左、右4个方向的气。"
+          }
+        },
+        {
+          "id": 5,
+          "title": "实战练习",
+          "content": "现在让我们在棋盘上实践一下！放置黑棋并观察它的气。",
+          "image": "practice_liberty",
+          "interactive": true,
+          "exercise": {
+            "type": "play",
+            "board_size": 9,
+            "instructions": "在角上放置一颗黑子，观察它有几口气",
+            "targets": [[1, 1], [1, 9], [9, 1], [9, 9]],
+            "required_stones": 1,
+            "success_message": "正确！角上的棋子只有2口气，最容易被吃。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "吃子规则",
+      "subtitle": "提子技巧",
+      "description": "学习如何吃掉对方的棋子",
+      "estimated_time": "25分钟",
+      "difficulty": "beginner",
+      "icon": "✋",
+      "steps": [
+        {
+          "id": 1,
+          "title": "如何吃子",
+          "content": "当一颗棋子或一个棋块的所有气都被对方堵住时，这颗棋子（或整个棋块）就会被提掉（吃掉）。提子后，被吃的棋子从棋盘上拿走。",
+          "image": "capture",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "一线吃子",
+          "content": "在棋盘边缘的棋子气比较少，容易被吃。一线（最边缘）的棋子只有一口气时，堵住那口气就能吃掉它。这是最基本的吃子方法。",
+          "image": "first_line",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "双打吃",
+          "content": "'双打吃'是指同时打吃（威胁要吃掉）对方两个分开的棋子或棋块。对方只能救其中一个，另一个就会被吃。这是非常有用的吃子技巧！",
+          "image": "double_atari",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "吃子练习",
+          "content": "试试看能不能吃掉白棋！白棋只剩一口气了，找到那个关键点。",
+          "image": "capture_practice",
+          "interactive": true,
+          "exercise": {
+            "type": "play",
+            "board_size": 9,
+            "setup": {
+              "black": [[2, 2], [2, 3]],
+              "white": [[2, 1]]
+            },
+            "instructions": "下一手吃掉白棋",
+            "solution": [[1, 1]],
+            "success_message": "太棒了！你成功吃掉了白棋！"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "禁着点",
+      "subtitle": "自杀禁止",
+      "description": "了解不能落子的位置",
+      "estimated_time": "15分钟",
+      "difficulty": "elementary",
+      "icon": "🚫",
+      "steps": [
+        {
+          "id": 1,
+          "title": "什么是禁着点",
+          "content": "围棋有一个重要规则：不能自杀！也就是说，不能下在让自己的棋子立即处于无气状态的点（除非能同时提掉对方的棋子）。这样的点称为'禁着点'。",
+          "image": "no_suicide",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "为什么禁止自杀",
+          "content": "禁止自杀的规则是为了保持游戏的合理性。如果可以随便自杀，游戏就会变得混乱。这个规则让棋手必须更加谨慎地思考每一手棋。",
+          "image": "why_no_suicide",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "例外情况",
+          "content": "有一种情况可以下在看似自杀的点：当你下这手棋能立即提掉对方的棋子时！因为这手棋落子后，你的棋子会有气（从被提掉的棋子那里获得气）。",
+          "image": "exception",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "判断练习",
+          "content": "看看下面这个局面，标记的位置是不是禁着点？",
+          "image": "check_point",
+          "interactive": true,
+          "exercise": {
+            "type": "quiz",
+            "question": "如果下在A点会立即让自己的棋子无气，且不能吃子，这是？",
+            "options": ["合法着法", "禁着点", "好棋", "妙手"],
+            "answer": 1,
+            "explanation": "这是禁着点，围棋禁止自杀。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "劫的规则",
+      "subtitle": "特殊规则",
+      "description": "学习围棋中最特殊的规则",
+      "estimated_time": "20分钟",
+      "difficulty": "elementary",
+      "icon": "🔄",
+      "steps": [
+        {
+          "id": 1,
+          "title": "什么是劫",
+          "content": "'劫'是围棋中的特殊情况。当一方提掉对方一子后，对方如果立即提回来，就会形成无限循环。为了防止这种情况，围棋规定了特殊的'劫'规则。",
+          "image": "ko",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "劫的规则",
+          "content": "当一方提劫后，对方不能立即提回，必须先在别处下一手（称为'找劫材'），然后才能提回。这手别处下的棋必须让对方回应，否则可以不理。",
+          "image": "ko_rule",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "找劫材",
+          "content": "'劫材'是指在别处下的能够威胁对方的一手棋。找劫材是劫争中的重要技巧。好的劫材能让对方不得不应，从而获得提回劫的机会。",
+          "image": "ko_threat",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "消劫",
+          "content": "如果不想继续打劫，可以选择'消劫'——在别处下更大的棋，放弃这个劫。有时候消劫是更明智的选择，特别是当劫材不利的时候。",
+          "image": "resolve_ko",
+          "interactive": false
+        },
+        {
+          "id": 5,
+          "title": "劫的理解",
+          "content": "劫是围棋中非常复杂和有趣的部分。初学者先理解基本规则即可，随着水平提高，会慢慢理解劫的更多变化和技巧。",
+          "image": "ko_understand",
+          "interactive": true,
+          "exercise": {
+            "type": "quiz",
+            "question": "提劫后，对方能不能立即提回？",
+            "options": ["可以", "不可以，必须先找劫材", "看情况", "永远不可以"],
+            "answer": 1,
+            "explanation": "提劫后对方不能立即提回，必须先在别处找劫材。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "胜负判定",
+      "subtitle": "如何计算胜负",
+      "description": "学习如何判断一盘棋的胜负",
+      "estimated_time": "20分钟",
+      "difficulty": "elementary",
+      "icon": "🏆",
+      "steps": [
+        {
+          "id": 1,
+          "title": "终局条件",
+          "content": "当双方都认为没有地方可以下棋，或者下棋已经没有意义时，就可以结束棋局。通常是一方 passing（停一手），另一方也 passing，棋局结束。",
+          "image": "end_game",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "地盘的计算",
+          "content": "围棋的胜负是看谁围的地盘多。地盘包括：你围住的空交叉点，加上你活棋（有两个眼的棋）所占的交叉点。被吃掉的棋子要拿出来放在一边。",
+          "image": "territory",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "贴目规则",
+          "content": "因为黑棋先行有优势，所以要给白棋补偿，这叫'贴目'。中国规则贴3¾子（相当于7.5目），日本规则贴6.5目。贴目后，黑棋需要比白棋多围出贴目的数量才能获胜。",
+          "image": "komi",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "数棋方法",
+          "content": "初学者可以用简单的数棋方法：\n1. 把双方的死棋拿掉\n2. 数出自己的空点数\n3. 加上活子数\n4. 黑棋减去贴目\n5. 比较大小",
+          "image": "counting",
+          "interactive": false
+        },
+        {
+          "id": 5,
+          "title": "胜负判定练习",
+          "content": "让我们来做一个简单的胜负判定练习！",
+          "image": "win_loss",
+          "interactive": true,
+          "exercise": {
+            "type": "quiz",
+            "question": "黑棋围了50目，白棋围了48目，中国规则黑贴3¾子，谁赢了？",
+            "options": ["黑棋赢", "白棋赢", "平局", "无法判断"],
+            "answer": 1,
+            "explanation": "黑棋50-3¾=46¼子，白棋48子，白棋赢。"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "基本棋型",
+      "subtitle": "开局知识",
+      "description": "学习围棋开局的基本棋型",
+      "estimated_time": "25分钟",
+      "difficulty": "elementary",
+      "icon": "⭐",
+      "steps": [
+        {
+          "id": 1,
+          "title": "星位",
+          "content": "'星位'是棋盘上的9个特殊点（3×3布局）。星位在布局阶段非常重要，是双方争夺的要点。在角上星位下棋可以兼顾两边，效率很高。",
+          "image": "hoshi",
+          "interactive": false
+        },
+        {
+          "id": 2,
+          "title": "小目",
+          "content": "'小目'位于棋盘角上第四线与第三线的交叉点。小目比星位更靠近角上，对角上的控制力更强，是重视角地的下法。",
+          "image": "komoku",
+          "interactive": false
+        },
+        {
+          "id": 3,
+          "title": "三三",
+          "content": "'三三'是指角上第三线与第三线的交叉点。三三非常坚实，但位置偏低，容易被对方从外部压迫。现代围棋中三三也很流行。",
+          "image": "sansan",
+          "interactive": false
+        },
+        {
+          "id": 4,
+          "title": "目外与高目",
+          "content": "'目外'在第五线与第三线，'高目'在第五线与第四线。这两种下法都比较少见，偏向于外势而非实地，需要配合其他棋子使用。",
+          "image": "mokuhazu",
+          "interactive": false
+        },
+        {
+          "id": 5,
+          "title": "开局原则",
+          "content": "围棋开局的基本原则：\n1. 金角银边草肚皮（角最重要）\n2. 先占空角\n3. 行棋要有根据\n4. 不要走得太重\n5. 注意棋子的配合",
+          "image": "opening",
+          "interactive": false
+        },
+        {
+          "id": 6,
+          "title": "实战练习",
+          "content": "让我们在棋盘上练习开局！在空角的星位下一颗黑子。",
+          "image": "opening_practice",
+          "interactive": true,
+          "exercise": {
+            "type": "play",
+            "board_size": 19,
+            "instructions": "在任意空角的星位放置一颗黑子",
+            "targets": [[4, 4], [4, 16], [16, 4], [16, 16]],
+            "required_stones": 1,
+            "success_message": "很好！星位是开局最常见的下法。"
+          }
+        }
+      ]
+    }
+  ]
+}

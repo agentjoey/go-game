@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Go Learning - 青少儿围棋学习平台{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static_files', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <span class="logo">⚫</span>
+                <span class="brand-text">Go Learning</span>
+            </div>
+            <button class="nav-toggle" aria-label="菜单">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">首页</a></li>
+                <li><a href="/play" class="{% if request.path == '/play' %}active{% endif %}">对弈</a></li>
+                <li><a href="/tsumego" class="{% if request.path == '/tsumego' %}active{% endif %}">死活题</a></li>
+                <li><a href="/tutorial" class="{% if request.path == '/tutorial' %}active{% endif %}">教程</a></li>
+                <li><a href="/records" class="{% if request.path == '/records' %}active{% endif %}">棋谱</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="切换主题">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>🎮 Go Learning - 让围棋学习变得有趣</p>
+            <p class="copyright">© 2024 青少儿围棋学习平台</p>
+        </footer>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+
+    <script src="{{ url_for('static_files', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

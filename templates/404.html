@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}页面未找到 - Go Learning{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content">
+        <div class="error-icon">🔍</div>
+        <h1>404</h1>
+        <h2>页面未找到</h2>
+        <p>抱歉，您访问的页面不存在或已被移除。</p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <span>🏠</span> 返回首页
+            </a>
+            <a href="/play" class="btn btn-secondary">
+                <span>⚫</span> 开始对弈
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
