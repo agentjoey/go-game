@@ -11,14 +11,28 @@ let game = null;
 
 class GoGame {
     constructor() {
+        console.log('GoGame constructor starting...');
         this.board = this.createEmptyBoard();
         this.currentPlayer = BLACK;
         this.moves = [];
         this.captures = { [BLACK]: 0, [WHITE]: 0 };
         this.gameOver = false;
         
+        // 检查GoBoard类是否存在
+        if (typeof GoBoard === 'undefined') {
+            console.error('GoGame ERROR: GoBoard class not found! Make sure go-board.js is loaded first.');
+            return;
+        }
+        
         // 创建棋盘
-        this.boardView = new GoBoard('board', BOARD_SIZE);
+        console.log('GoGame: Creating GoBoard with containerId=go-board, size=', BOARD_SIZE);
+        this.boardView = new GoBoard('go-board', BOARD_SIZE);
+        
+        if (!this.boardView.container) {
+            console.error('GoGame ERROR: Board view failed to initialize - container not found');
+            return;
+        }
+        
         this.boardView.addClickListener((row, col) => {
             console.log('Game received click:', row, col);
             this.handleMove(row, col);
@@ -167,13 +181,14 @@ class GoGame {
     }
     
     updateUI() {
-        const stone = document.getElementById('currentStone');
-        const player = document.getElementById('currentPlayer');
-        if (stone) stone.textContent = this.currentPlayer === BLACK ? '⚫' : '⚪';
-        if (player) player.textContent = this.currentPlayer === BLACK ? '黑方回合' : '白方回合';
+        const player = document.getElementById('current-player');
+        if (player) {
+            player.textContent = this.currentPlayer === BLACK ? '黑棋' : '白棋';
+            player.className = 'turn-indicator ' + (this.currentPlayer === BLACK ? 'black' : 'white');
+        }
         
-        const blackCap = document.getElementById('blackCaptures');
-        const whiteCap = document.getElementById('whiteCaptures');
+        const blackCap = document.getElementById('black-captures');
+        const whiteCap = document.getElementById('white-captures');
         if (blackCap) blackCap.textContent = this.captures[BLACK];
         if (whiteCap) whiteCap.textContent = this.captures[WHITE];
         
@@ -181,25 +196,24 @@ class GoGame {
     }
     
     updateHistory() {
-        const el = document.getElementById('moveHistory');
+        const el = document.getElementById('moves-list');
         if (!el) return;
         
         if (this.moves.length === 0) {
-            el.innerHTML = '<p class="text-muted small p-2">暂无记录</p>';
+            el.innerHTML = '<p class="empty-moves">暂无落子</p>';
             return;
         }
         
-        let html = '<div class="list-group list-group-flush" style="max-height:400px;overflow-y:auto;">';
+        let html = '';
         this.moves.forEach((m, i) => {
             const s = m.player === BLACK ? '⚫' : '⚪';
             const n = m.player === BLACK ? '黑' : '白';
             if (m.type === 'pass') {
-                html += `<div class="list-group-item p-2">${i+1}. ${s} ${n} Pass</div>`;
+                html += `<div class="move-item">${i+1}. ${s} ${n} 停一手</div>`;
             } else {
-                html += `<div class="list-group-item p-2 d-flex justify-content-between">${i+1}. ${s} ${n}<span class="badge bg-secondary">${m.coord}</span></div>`;
+                html += `<div class="move-item">${i+1}. ${s} ${n} ${m.coord}</div>`;
             }
         });
-        html += '</div>';
         el.innerHTML = html;
     }
     

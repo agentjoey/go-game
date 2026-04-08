@@ -20,11 +20,14 @@ class GoBoard {
     }
     
     init() {
+        console.log('GoBoard.init() called, looking for container:', this.containerId);
         this.container = document.getElementById(this.containerId);
         if (!this.container) {
-            console.error('Container not found:', this.containerId);
+            console.error('GoBoard ERROR: Container not found:', this.containerId);
+            console.error('Available elements with id:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
             return;
         }
+        console.log('GoBoard: Container found', this.container);
         this.render();
         console.log('GoBoard initialized:', this.containerId);
     }
@@ -91,10 +94,16 @@ class GoBoard {
     }
     
     bindClickEvent() {
-        const svg = document.getElementById(`goSvg-${this.containerId}`);
-        if (!svg) return;
+        const svgId = `goSvg-${this.containerId}`;
+        const svg = document.getElementById(svgId);
+        console.log('GoBoard.bindClickEvent(): looking for SVG:', svgId, 'found:', !!svg);
         
-        // 移除旧事件
+        if (!svg) {
+            console.error('GoBoard ERROR: SVG element not found:', svgId);
+            return;
+        }
+        
+        // 移除旧事件（通过替换节点）
         const newSvg = svg.cloneNode(true);
         svg.parentNode.replaceChild(newSvg, svg);
         
@@ -110,12 +119,14 @@ class GoBoard {
             const col = Math.floor(x / cellW);
             const row = Math.floor(y / cellH);
             
-            console.log('Board click:', row, col);
+            console.log('GoBoard CLICK:', row, col, 'listeners:', this.listeners.length);
             
             if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
                 this.listeners.forEach(fn => fn(row, col));
             }
         });
+        
+        console.log('GoBoard: Click event bound to SVG');
     }
     
     setBoard(board) {
