@@ -138,9 +138,25 @@ def internal_error(error):
     return render_template('index.html'), 500
 
 if __name__ == '__main__':
+    import socket
+    
+    # 获取本机 IP
+    def get_local_ip():
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return "127.0.0.1"
+    
+    local_ip = get_local_ip()
+    
     print("=" * 50)
     print("🎮 Go Learning - 青少儿围棋学习平台")
     print("=" * 50)
-    print("访问地址: http://127.0.0.1:1010")
+    print(f"本地访问: http://127.0.0.1:1010")
+    print(f"局域网访问: http://{local_ip}:1010")
     print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=1010)
