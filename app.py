@@ -27,7 +27,12 @@ def load_tutorial_data():
 
 @app.route('/')
 def index():
-    """首页"""
+    """首页 - Dashboard"""
+    return render_template('dashboard.html')
+
+@app.route('/home')
+def home():
+    """旧版首页（保留）"""
     return render_template('index.html')
 
 @app.route('/play')
