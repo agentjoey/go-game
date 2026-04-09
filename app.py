@@ -21,6 +21,36 @@ from go_engine_core import GoEngineCore
 from mcts_engine import MCTSEngine
 from gtp_engine import GTPEngine
 
+# Knowledge Base Engine imports
+from kb_engine import GoKnowledgeBase
+from kb_teaching import TeachingEngine
+from kb_assessment import AssessmentEngine
+
+# Knowledge Base Engine global instances
+KB_PATH = "/Users/xtation/Library/Mobile Documents/iCloud~md~obsidian/Documents/Brain#2/10_Projects/P020-Go-Learning/04_Knowledge_Base/"
+kb_instance = None
+teaching_instance = None
+assessment_instance = None
+
+def get_kb():
+    global kb_instance
+    if kb_instance is None:
+        kb_instance = GoKnowledgeBase(KB_PATH)
+        kb_instance.load_all()
+    return kb_instance
+
+def get_teaching():
+    global teaching_instance
+    if teaching_instance is None:
+        teaching_instance = TeachingEngine(get_kb())
+    return teaching_instance
+
+def get_assessment():
+    global assessment_instance
+    if assessment_instance is None:
+        assessment_instance = AssessmentEngine(get_kb())
+    return assessment_instance
+
 # 存储活跃游戏字典
 games = {}
 
@@ -173,6 +203,99 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('index.html'), 500
+
+# ==================== Knowledge Base API Routes ====================
+
+@app.route('/api/kb/overview')
+def api_kb_overview():
+    """Get knowledge base overview statistics"""
+    try:
+        kb = get_kb()
+        overview = kb.get_overview()
+        return jsonify({'success': True, 'data': overview})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/kb/query')
+def api_kb_query():
+    """Query knowledge points by level, topic, or keyword"""
+    try:
+        level = request.args.get('level', type=int)
+        topic = request.args.get('topic')
+        keyword = request.args.get('keyword')
+        kb = get_kb()
+        results = kb.query(level=level, topic=topic, keyword=keyword)
+        return jsonify({
+            'success': True,
+            'data': {
+                'results': [kp.to_dict() for kp in results],
+                'count': len(results)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/kb/problems')
+def api_kb_problems():
+    """Get practice problems by level"""
+    try:
+        level = request.args.get('level', type=int, default=1)
+        count = request.args.get('count', type=int, default=10)
+        topic = request.args.get('topic')
+        kb = get_kb()
+        problems = kb.get_problems(level, count, topic)
+        return jsonify({
+            'success': True,
+            'data': {
+                'problems': [p.to_dict() for p in problems],
+                'count': len(problems)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/kb/dialogue')
+def api_kb_dialogue():
+    """Get AI dialogue scripts"""
+    try:
+        level = request.args.get('level', type=int, default=1)
+        situation = request.args.get('situation')
+        kb = get_kb()
+        scripts = kb.get_dialogue(level, situation)
+        return jsonify({
+            'success': True,
+            'data': {
+                'scripts': [s.to_dict() for s in scripts],
+                'count': len(scripts)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/kb/teach', methods=['POST'])
+def api_kb_teach():
+    """Get AI teaching response based on game state"""
+    try:
+        data = request.json
+        student_level = data.get('level', 1)
+        game_state = data.get('gameState')
+        teaching = get_teaching()
+        response = teaching.get_teaching_dialogue(student_level, game_state)
+        return jsonify({'success': True, 'data': response.to_dict()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/kb/assess', methods=['POST'])
+def api_kb_assess():
+    """Assess student level based on answers"""
+    try:
+        data = request.json
+        answers = data.get('answers', [])
+        assessment = get_assessment()
+        result = assessment.assess_level(answers)
+        return jsonify({'success': True, 'data': result.to_dict()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==================== 游戏API路由 ====================
 
