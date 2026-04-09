@@ -344,6 +344,127 @@ class GoEngine {
         // Step 6: Return results
         return { newBoard, captured, koState };
     }
+
+    /**
+     * Flood-fill from an empty position to find the entire connected empty region
+     * Uses BFS to find all empty points that are connected
+     * @param {number} startRow - Starting row index
+     * @param {number} startCol - Starting column index
+     * @param {Set<string>} visited - Set of already visited positions (as "row,col" strings)
+     * @returns {{territory: Set<string>, owner: number|null}}
+     *   territory: Set of "row,col" strings for all empty positions in the region
+     *   owner: BLACK, WHITE, or null (null if territory touches both colors - neutral)
+     * @private
+     */
+    _floodFill(startRow, startCol, visited) {
+        const territory = new Set();
+        const boundaryColors = new Set();
+        const queue = [[startRow, startCol]];
+        const key = (r, c) => `${r},${c}`;
+
+        visited.add(key(startRow, startCol));
+
+        while (queue.length > 0) {
+            const [r, c] = queue.shift();
+            territory.add(key(r, c));
+
+            for (const [nr, nc] of this.getNeighbors(r, c)) {
+                const neighborKey = key(nr, nc);
+                const neighborValue = this.board[nr][nc];
+
+                if (neighborValue === GoEngine.EMPTY) {
+                    // Empty neighbor - add to queue if not visited
+                    if (!visited.has(neighborKey)) {
+                        visited.add(neighborKey);
+                        queue.push([nr, nc]);
+                    }
+                } else {
+                    // Stone neighbor - record its color as a boundary
+                    boundaryColors.add(neighborValue);
+                }
+            }
+        }
+
+        // Determine owner: null if touches both colors, otherwise the single color
+        let owner = null;
+        if (boundaryColors.size === 1) {
+            owner = boundaryColors.values().next().value;
+        }
+
+        return { territory, owner };
+    }
+
+    /**
+     * Calculate the score using flood-fill territory calculation
+     * This is for END GAME scoring - does not check for dead groups
+     * @param {number} komi - Komi (points given to white, default 6.5 for Chinese rules)
+     * @returns {{black: number, white: number, territory: {black: number, white: number}, stones: {black: number, white: number}, winner: string|null, margin: number}}
+     */
+    score(komi = 6.5) {
+        const visited = new Set();
+        const territory = { black: new Set(), white: new Set() };
+        const stones = { black: 0, white: 0 };
+
+        // Count all stones on the board
+        for (let r = 0; r < this.boardSize; r++) {
+            for (let c = 0; c < this.boardSize; c++) {
+                if (this.board[r][c] === GoEngine.BLACK) {
+                    stones.black++;
+                } else if (this.board[r][c] === GoEngine.WHITE) {
+                    stones.white++;
+                }
+            }
+        }
+
+        // Flood-fill all empty regions to find territory
+        for (let r = 0; r < this.boardSize; r++) {
+            for (let c = 0; c < this.boardSize; c++) {
+                const key = `${r},${c}`;
+                if (this.board[r][c] === GoEngine.EMPTY && !visited.has(key)) {
+                    const result = this._floodFill(r, c, visited);
+                    if (result.owner === GoEngine.BLACK) {
+                        for (const pos of result.territory) {
+                            territory.black.add(pos);
+                        }
+                    } else if (result.owner === GoEngine.WHITE) {
+                        for (const pos of result.territory) {
+                            territory.white.add(pos);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Calculate scores
+        const blackScore = stones.black + territory.black.size;
+        const whiteScore = stones.white + territory.white.size + komi;
+
+        // Determine winner
+        let winner = null;
+        let margin = 0;
+        if (blackScore > whiteScore) {
+            winner = 'black';
+            margin = blackScore - whiteScore;
+        } else if (whiteScore > blackScore) {
+            winner = 'white';
+            margin = whiteScore - blackScore;
+        }
+
+        return {
+            black: blackScore,
+            white: whiteScore,
+            territory: {
+                black: territory.black.size,
+                white: territory.white.size
+            },
+            stones: {
+                black: stones.black,
+                white: stones.white
+            },
+            winner,
+            margin
+        };
+    }
 }
 
 // Export to window for use in browser
