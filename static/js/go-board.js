@@ -38,36 +38,36 @@ class GoBoard {
         const size = this.size;
         const cellSize = 100 / size;
         
-        let svg = `<svg viewBox="0 0 100 100" style="width:100%;height:auto;display:block;cursor:pointer;" class="go-board-svg">`;
+        let svgContent = ``;
         
         // 榧木色背景
-        svg += `<rect x="0" y="0" width="100" height="100" fill="#e8dfc8" rx="4"/>`;
+        svgContent += `<rect x="0" y="0" width="100" height="100" fill="#e8dfc8" rx="4"/>`;
         
         // 网格线
         for (let i = 0; i < size; i++) {
             const pos = (i + 0.5) * cellSize;
-            svg += `<line x1="${cellSize/2}" y1="${pos}" x2="${100-cellSize/2}" y2="${pos}" stroke="#3d3d3d" stroke-width="0.35"/>`;
-            svg += `<line x1="${pos}" y1="${cellSize/2}" x2="${pos}" y2="${100-cellSize/2}" stroke="#3d3d3d" stroke-width="0.35"/>`;
+            svgContent += `<line x1="${cellSize/2}" y1="${pos}" x2="${100-cellSize/2}" y2="${pos}" stroke="#3d3d3d" stroke-width="0.35"/>`;
+            svgContent += `<line x1="${pos}" y1="${cellSize/2}" x2="${pos}" y2="${100-cellSize/2}" stroke="#3d3d3d" stroke-width="0.35"/>`;
         }
         
         // 星位
         const stars = this.getStarPoints();
         stars.forEach(([r, c]) => {
-            svg += `<circle cx="${(c+0.5)*cellSize}" cy="${(r+0.5)*cellSize}" r="${cellSize*0.18}" fill="#c45c48"/>`;
+            svgContent += `<circle cx="${(c+0.5)*cellSize}" cy="${(r+0.5)*cellSize}" r="${cellSize*0.18}" fill="#c45c48"/>`;
         });
         
         // 候选子悬停
         if (this.hoverCell && this.board[this.hoverCell.row]?.[this.hoverCell.col] === 0) {
             const hx = (this.hoverCell.col + 0.5) * cellSize;
             const hy = (this.hoverCell.row + 0.5) * cellSize;
-            svg += `<circle class="candidate-stone" cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(0,0,0,0.15)" stroke="#666" stroke-width="0.3" stroke-dasharray="2,1"/>`;
+            svgContent += `<circle class="candidate-stone" cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(0,0,0,0.15)" stroke="#666" stroke-width="0.3" stroke-dasharray="2,1"/>`;
         }
 
         // 费曼模式高亮区域
         this.highlightCells.forEach(({ row, col }) => {
             const hx = (col + 0.5) * cellSize;
             const hy = (row + 0.5) * cellSize;
-            svg += `<circle cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(255,215,0,0.3)" stroke="#ffd700" stroke-width="0.5" stroke-dasharray="3,2"/>`;
+            svgContent += `<circle cx="${hx}" cy="${hy}" r="${cellSize*0.35}" fill="rgba(196, 92, 72, 0.2)" stroke="#c45c48" stroke-width="0.5" stroke-dasharray="3,2"/>`;
         });
         
         // 棋子
@@ -76,69 +76,77 @@ class GoBoard {
                 if (this.board[r][c] !== 0) {
                     const cx = (c + 0.5) * cellSize;
                     const cy = (r + 0.5) * cellSize;
-                    const isBlack = this.board[r][c] === 1;
+                    // 棋子颜色: 1=白棋(浅色), 2=黑棋(深色) — 交换渲染逻辑
+                    const isBlack = this.board[r][c] === 2;
                     const isAnimating = this.animatingCells.some(a => a.row === r && a.col === c);
                     const animClass = isAnimating ? 'piece-drop' : '';
                     
                     // 阴影
-                    svg += `<circle cx="${cx+0.6}" cy="${cy+0.6}" r="${cellSize*0.4}" fill="rgba(0,0,0,0.2)"/>`;
+                    svgContent += `<circle cx="${cx+0.6}" cy="${cy+0.6}" r="${cellSize*0.4}" fill="rgba(0,0,0,0.2)"/>`;
                     
                     if (isBlack) {
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#2d2d2d" stroke="#1a1a1a" stroke-width="0.3" class="${animClass}"/>`;
-                        svg += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.15}" ry="${cellSize*0.08}" fill="rgba(255,255,255,0.15)"/>`;
-                    } else {
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#faf8f5" stroke="#d0cdc5" stroke-width="0.3" class="${animClass}"/>`;
-                        svg += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.12}" ry="${cellSize*0.06}" fill="rgba(255,255,255,0.6)"/>`;
+                        // 黑棋 = 2 (用深色表示)
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#2d2d2d" stroke="#1a1a1a" stroke-width="0.3" class="${animClass}"/>`;
+                        svgContent += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.15}" ry="${cellSize*0.08}" fill="rgba(255,255,255,0.15)"/>`;
+                    } else if (this.board[r][c] === 1) {
+                        // 白棋 = 1 (用浅色表示)
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#faf8f5" stroke="#d0cdc5" stroke-width="0.3" class="${animClass}"/>`;
+                        svgContent += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.12}" ry="${cellSize*0.06}" fill="rgba(255,255,255,0.6)"/>`;
+                    } else if (this.board[r][c] === 3) {
+                        // 红色提示标记
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.35}" fill="rgba(196, 92, 72, 0.2)" stroke="#c45c48" stroke-width="0.5" stroke-dasharray="2,1"/>`;
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.1}" fill="#c45c48"/>`;
                     }
                     
                     // 最后一手标记
                     if (this.lastMove && this.lastMove[0] === r && this.lastMove[1] === c) {
                         const markerColor = isBlack ? '#fff' : '#1a1a1a';
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.12}" fill="${markerColor}"/>`;
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.12}" fill="${markerColor}"/>`;
                     }
 
                     // 费曼模式问号标记
                     if (this.questionMark && this.questionMark.row === r && this.questionMark.col === c) {
-                        svg += `<text x="${cx}" y="${cy + cellSize*0.15}" text-anchor="middle" font-size="${cellSize*0.4}" fill="#c45c48" font-weight="bold">?</text>`;
+                        svgContent += `<text x="${cx}" y="${cy + cellSize*0.15}" text-anchor="middle" font-size="${cellSize*0.4}" fill="#c45c48" font-weight="bold">?</text>`;
                     }
 
                     // 正确标记
                     if (this.correctMarkPos && this.correctMarkPos.row === r && this.correctMarkPos.col === c) {
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.25}" fill="#5a8f5a" stroke="#fff" stroke-width="${cellSize*0.05}"/>`;
-                        svg += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.25}" fill="#fff" font-weight="bold">✓</text>`;
+                        svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.25}" fill="#5a8f5a" stroke="#fff" stroke-width="${cellSize*0.05}"/>`;
+                        svgContent += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.25}" fill="#fff" font-weight="bold">✓</text>`;
                     }
 
                     // 手数显示
                     if (this.showMoveNumbers && this.moveNumbers[r]?.[c]) {
                         const moveNum = this.moveNumbers[r][c];
                         const textColor = isBlack ? '#fff' : '#1a1a1a';
-                        svg += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.35}" fill="${textColor}" font-weight="bold">${moveNum}</text>`;
+                        svgContent += `<text x="${cx}" y="${cy + cellSize*0.12}" text-anchor="middle" font-size="${cellSize*0.35}" fill="${textColor}" font-weight="bold">${moveNum}</text>`;
                     }
                 }
             }
         }
 
-        // 苏格拉底模式焦点位置 - 金色醒目标记（画在棋子之上，确保始终可见）
+        // 苏格拉底模式焦点位置 - 红色醒目标记（画在棋子之上，确保始终可见）
         if (this.socraticFocus) {
             const fx = (this.socraticFocus.col + 0.5) * cellSize;
             const fy = (this.socraticFocus.row + 0.5) * cellSize;
             // 外层虚线圆
-            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.45}" fill="none" stroke="#ffd700" stroke-width="${cellSize*0.06}" stroke-dasharray="${cellSize*0.15},${cellSize*0.08}"/>`;
+            svgContent += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.45}" fill="none" stroke="#c45c48" stroke-width="${cellSize*0.06}" stroke-dasharray="${cellSize*0.15},${cellSize*0.08}"/>`;
             // 内层实线圆
-            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.3}" fill="rgba(255,215,0,0.15)" stroke="#ffd700" stroke-width="${cellSize*0.05}"/>`;
+            svgContent += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.3}" fill="rgba(196, 92, 72, 0.15)" stroke="#c45c48" stroke-width="${cellSize*0.05}"/>`;
             // 中心实心圆点
-            svg += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.1}" fill="#ffd700"/>`;
+            svgContent += `<circle cx="${fx}" cy="${fy}" r="${cellSize*0.1}" fill="#c45c48"/>`;
             // 四个方向小三角装饰
             const tri = cellSize * 0.06;
-            svg += `<polygon points="${fx},${fy-cellSize*0.38} ${fx-tri},${fy-cellSize*0.3} ${fx+tri},${fy-cellSize*0.3}" fill="#ffd700"/>`;
-            svg += `<polygon points="${fx},${fy+cellSize*0.38} ${fx-tri},${fy+cellSize*0.3} ${fx+tri},${fy+cellSize*0.3}" fill="#ffd700"/>`;
-            svg += `<polygon points="${fx-cellSize*0.38},${fy} ${fx-cellSize*0.3},${fy-tri} ${fx-cellSize*0.3},${fy+tri}" fill="#ffd700"/>`;
-            svg += `<polygon points="${fx+cellSize*0.38},${fy} ${fx+cellSize*0.3},${fy-tri} ${fx+cellSize*0.3},${fy+tri}" fill="#ffd700"/>`;
+            svgContent += `<polygon points="${fx},${fy-cellSize*0.38} ${fx-tri},${fy-cellSize*0.3} ${fx+tri},${fy-cellSize*0.3}" fill="#c45c48"/>`;
+            svgContent += `<polygon points="${fx},${fy+cellSize*0.38} ${fx-tri},${fy+cellSize*0.3} ${fx+tri},${fy+cellSize*0.3}" fill="#c45c48"/>`;
+            svgContent += `<polygon points="${fx-cellSize*0.38},${fy} ${fx-cellSize*0.3},${fy-tri} ${fx-cellSize*0.3},${fy+tri}" fill="#c45c48"/>`;
+            svgContent += `<polygon points="${fx+cellSize*0.38},${fy} ${fx+cellSize*0.3},${fy-tri} ${fx+cellSize*0.3},${fy+tri}" fill="#c45c48"/>`;
         }
         
-        svg += `<rect class="hover-layer" x="0" y="0" width="100" height="100" fill="transparent"/>`;
-        svg += `</svg>`;
-        this.container.innerHTML = svg;
+        svgContent += `<rect class="hover-layer" x="0" y="0" width="100" height="100" fill="transparent"/>`;
+        
+        // 实际渲染到 DOM
+        this.container.innerHTML = `<svg viewBox="0 0 100 100" style="width:100%;height:auto;display:block;cursor:pointer;" class="go-board-svg">` + svgContent + `</svg>`;
         
         this.bindEvents();
     }

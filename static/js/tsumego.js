@@ -304,8 +304,8 @@ function handlePuzzleClick(row, col) {
     const isCorrect = currentPuzzle.solution.some(([r, c]) => r === row && c === col);
     
     if (isCorrect) {
-        // 落子
-        puzzleBoard.board[row][col] = 1;
+        // 落子 — 2=黑棋 (深色渲染)
+        puzzleBoard.board[row][col] = 2;
         puzzleBoard.render();
         
         stats.completed++;
@@ -396,7 +396,7 @@ function showToast(msg, type = 'info') {
     const colors = {
         success: 'rgba(90, 143, 90, 0.95)',
         error: 'rgba(196, 92, 72, 0.95)',
-        info: 'rgba(90, 122, 156, 0.95)',
+        info: 'rgba(196, 92, 72, 0.95)',
         warning: 'rgba(212, 160, 61, 0.95)'
     };
     
