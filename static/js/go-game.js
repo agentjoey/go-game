@@ -43,6 +43,10 @@ class GoGame {
 
         this.gameState = Array.from({ length: this.boardSize }, () => Array(this.boardSize).fill(0));
         
+        // Initialize the Go engine for rule validation
+        this.engine = new GoEngine(this.boardSize);
+        this.engine.board = this.gameState;
+        
         this.board = new GoBoard('go-board', this.boardSize);
         this.board.addClickListener((r, c) => this.handleMove(r, c));
         
@@ -65,24 +69,39 @@ class GoGame {
         if (this.isGameOver || this.feynmanMode) return;
         if (this.gameState[row][col] !== 0) return;
 
-        if (this.placeStone(row, col, this.currentPlayer)) {
-            this.history.push({
-                player: this.currentPlayer,
-                row: row,
-                col: col,
-                board: JSON.parse(JSON.stringify(this.gameState))
-            });
+        // Use the engine for rule validation
+        const result = this.engine.isValidMove(row, col, this.currentPlayer, this.engine.koState);
+        if (!result.valid) {
+            console.warn('Invalid move:', result.reason);
+            return;
+        }
+        
+        const { newBoard, captured, koState } = this.engine.simulateMove(row, col, this.currentPlayer);
+        this.engine.board = newBoard;
+        this.gameState = newBoard;
+        this.engine.koState = koState;
 
-            this.board.setBoard(this.gameState);
-            this.board.setLastMove(row, col);
-            this.board.playPlaceAnimation(row, col);
-            
-            this.currentPlayer = 3 - this.currentPlayer;
-            this.updateUI();
+        this.history.push({
+            player: this.currentPlayer,
+            row: row,
+            col: col,
+            board: JSON.parse(JSON.stringify(this.gameState))
+        });
 
-            if (this.aiEnabled && this.currentPlayer === 2 && !this.isGameOver) {
-                setTimeout(() => this.makeAIMove(), 600);
-            }
+        if (captured.length > 0) {
+            this.captures[this.currentPlayer] += captured.length;
+            this.board.playCaptureAnimation(captured);
+        }
+
+        this.board.setBoard(this.gameState);
+        this.board.setLastMove(row, col);
+        this.board.playPlaceAnimation(row, col);
+        
+        this.currentPlayer = 3 - this.currentPlayer;
+        this.updateUI();
+
+        if (this.aiEnabled && this.currentPlayer === 2 && !this.isGameOver) {
+            setTimeout(() => this.makeAIMove(), 600);
         }
     }
 
@@ -182,8 +201,19 @@ class GoGame {
             return;
         }
 
-        const move = this.getBasicAIMove();
-        if (move) this.handleMove(move.row, move.col);
+        try {
+            const response = await fetch('/api/game/ai-move?difficulty=' + this.difficulty);
+            const move = await response.json();
+            if (move && move.row !== undefined && move.col !== undefined) {
+                this.handleMove(move.row, move.col);
+            }
+        } catch (err) {
+            console.error('AI move failed:', err);
+            // Fallback to basic move
+            const move = this.getBasicAIMove();
+            if (move) this.handleMove(move.row, move.col);
+        }
+        
         if (window.aiCompanion) window.aiCompanion.setThinking(false);
     }
 
@@ -224,6 +254,8 @@ class GoGame {
             Array.from({ length: this.boardSize }, () => Array(this.boardSize).fill(0));
         
         this.gameState = JSON.parse(JSON.stringify(lastState));
+        this.engine.board = this.gameState;
+        this.engine.koState = null;
         this.board.setBoard(this.gameState);
         this.board.clearLastMove();
         this.currentPlayer = 1;
