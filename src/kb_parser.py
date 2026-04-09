@@ -21,6 +21,13 @@ class DialogueEntry:
     avatar: str  # e.g., "🐼"
     content: str
 
+    def to_dict(self) -> dict:
+        return {
+            'role': self.role,
+            'avatar': self.avatar,
+            'content': self.content
+        }
+
 
 @dataclass
 class KnowledgePoint:
@@ -35,6 +42,19 @@ class KnowledgePoint:
     common_mistakes: List[Tuple[str, str]] = field(default_factory=list)  # (wrong, correct)
     difficulty: str = "easy"  # "easy", "medium", "hard"
 
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'title': self.title,
+            'level': self.level,
+            'section': self.section,
+            'concepts': self.concepts,
+            'teaching_goals': self.teaching_goals,
+            'dialogue_examples': [d.to_dict() for d in self.dialogue_examples],
+            'common_mistakes': [{'wrong': m[0], 'correct': m[1]} for m in self.common_mistakes],
+            'difficulty': self.difficulty
+        }
+
 
 @dataclass
 class Problem:
@@ -48,6 +68,18 @@ class Problem:
     explanation: str = ""
     difficulty: str = "easy"
 
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'level': self.level,
+            'topic': self.topic,
+            'question_type': self.question_type,
+            'question': self.question,
+            'answer': self.answer,
+            'explanation': self.explanation,
+            'difficulty': self.difficulty
+        }
+
 
 @dataclass
 class LearningPathItem:
@@ -57,6 +89,15 @@ class LearningPathItem:
     knowledge_points: List[str] = field(default_factory=list)
     practice_games: int = 0
     estimated_time: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            'step': self.step,
+            'title': self.title,
+            'knowledge_points': self.knowledge_points,
+            'practice_games': self.practice_games,
+            'estimated_time': self.estimated_time
+        }
 
 
 class KBMarkdownParser:
