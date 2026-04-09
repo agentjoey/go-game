@@ -18,6 +18,7 @@ class GoEngine {
     constructor(boardSize = 19) {
         this.boardSize = boardSize;
         this.board = this._createEmptyBoard();
+        this.koState = null;
     }
 
     /**
@@ -116,6 +117,123 @@ class GoEngine {
             board.push(new Array(this.boardSize).fill(GoEngine.EMPTY));
         }
         return board;
+    }
+
+    /**
+     * Compare two 2D board arrays for equality
+     * @param {number[][]} a - First board
+     * @param {number[][]} b - Second board
+     * @returns {boolean} True if boards are identical
+     * @private
+     */
+    _boardsEqual(a, b) {
+        for (let r = 0; r < this.boardSize; r++) {
+            for (let c = 0; c < this.boardSize; c++) {
+                if (a[r][c] !== b[r][c]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check if a move would be a suicide (no liberties and no captures)
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @param {number} player - Player color (BLACK or WHITE)
+     * @returns {boolean} True if the move would be suicide
+     * @private
+     */
+    _isSuicide(row, col, player) {
+        // Temporarily place the stone
+        const originalValue = this.board[row][col];
+        this.board[row][col] = player;
+
+        // Check if own group has liberties after placement
+        const ownGroup = this.getGroup(row, col);
+        const ownLiberties = this.countLiberties(ownGroup);
+
+        // If we have liberties, it's not suicide
+        if (ownLiberties.size > 0) {
+            this.board[row][col] = originalValue;
+            return false;
+        }
+
+        // No liberties - check if any opponent groups would be captured
+        const opponent = player === GoEngine.BLACK ? GoEngine.WHITE : GoEngine.BLACK;
+        let captured = false;
+
+        for (const [nr, nc] of this.getNeighbors(row, col)) {
+            if (this.board[nr][nc] === opponent) {
+                const opponentGroup = this.getGroup(nr, nc);
+                if (this.countLiberties(opponentGroup).size === 0) {
+                    captured = true;
+                    break;
+                }
+            }
+        }
+
+        // Restore board state
+        this.board[row][col] = originalValue;
+
+        // Suicide if no liberties AND no captures
+        return !captured;
+    }
+
+    /**
+     * Check if a move would violate ko rules
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @param {number} player - Player color (BLACK or WHITE)
+     * @param {number[][]} koState - Previous board state (ko state) or null
+     * @returns {boolean} True if the move would be ko
+     * @private
+     */
+    _isKo(row, col, player, koState) {
+        if (koState === null) {
+            return false;
+        }
+
+        // Simulate the move
+        const originalValue = this.board[row][col];
+        this.board[row][col] = player;
+        const result = this._boardsEqual(this.board, koState);
+        this.board[row][col] = originalValue;
+
+        return result;
+    }
+
+    /**
+     * Check if a move is valid
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @param {number} player - Player color (BLACK or WHITE)
+     * @param {number[][]} koState - Previous board state for ko detection (optional)
+     * @returns {{valid: boolean, reason: string}} Object with validity and reason
+     */
+    isValidMove(row, col, player, koState = null) {
+        // Check if within bounds
+        if (row < 0 || row >= this.boardSize || col < 0 || col >= this.boardSize) {
+            return { valid: false, reason: 'Out of bounds' };
+        }
+
+        // Check if position is empty
+        if (this.board[row][col] !== GoEngine.EMPTY) {
+            return { valid: false, reason: 'Position already occupied' };
+        }
+
+        // Check ko
+        if (this._isKo(row, col, player, koState)) {
+            return { valid: false, reason: 'Ko violation' };
+        }
+
+        // Check suicide
+        if (this._isSuicide(row, col, player)) {
+            return { valid: false, reason: 'Suicide move' };
+        }
+
+        return { valid: true, reason: '' };
     }
 }
 
