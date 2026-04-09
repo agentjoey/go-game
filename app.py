@@ -17,9 +17,16 @@ app = Flask(__name__)
 # 导入GoGame类
 sys.path.insert(0, 'src')
 from go_game import GoGame
+from go_engine_core import GoEngineCore
+from mcts_engine import MCTSEngine
+from gtp_engine import GTPEngine
 
 # 存储活跃游戏字典
 games = {}
+
+# Separate storage for MCTS/GTP engines (not GoGame)
+mcts_engines = {}   # game_id -> MCTSEngine
+gtp_engines = {}    # engine_name -> GTPEngine
 
 # 加载死活题数据
 def load_tsumego_data():
@@ -169,6 +176,19 @@ def internal_error(error):
 
 # ==================== 游戏API路由 ====================
 
+def get_or_create_mcts(game_id: str, board_size: int = 19) -> MCTSEngine:
+    """Get or create MCTS engine for a game"""
+    if game_id not in mcts_engines:
+        core = GoEngineCore(board_size=board_size)
+        mcts_engines[game_id] = MCTSEngine(core=core, board_size=board_size)
+    return mcts_engines[game_id]
+
+def get_or_create_gtp(name: str = "default") -> GTPEngine:
+    """Get or create GTP engine"""
+    if name not in gtp_engines:
+        gtp_engines[name] = GTPEngine(name=name, version="1.0")
+    return gtp_engines[name]
+
 def get_or_create_game(game_id):
     """获取或创建游戏实例"""
     if game_id not in games:
@@ -280,6 +300,55 @@ def api_get_ai_move():
                 'validMovesCount': len(valid_moves)
             }
         })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/game/mcts-move', methods=['GET'])
+def api_mcts_move():
+    """Get AI move using MCTS (Monte Carlo Tree Search)"""
+    try:
+        game_id = request.args.get('gameId', str(uuid.uuid4()))
+        board_size = int(request.args.get('boardSize', 19))
+        player = int(request.args.get('player', 2))  # 1=black, 2=white
+        simulations = int(request.args.get('simulations', 800))
+        
+        mcts = get_or_create_mcts(game_id, board_size)
+        move = mcts.get_best_move(player=player, simulations=simulations)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'gameId': game_id,
+                'move': {'row': move[0], 'col': move[1]} if move else None,
+                'player': player,
+                'simulations': simulations
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/gtp/boardsize', methods=['GET'])
+def api_gtp_boardsize():
+    """GTP boardsize command"""
+    try:
+        size = int(request.args.get('size', 19))
+        gtp = get_or_create_gtp()
+        gtp.board_size = size
+        gtp.core = GoEngineCore(board_size=size)
+        return jsonify({'success': True, 'data': {'boardsize': size}})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/gtp/cmd', methods=['POST'])
+def api_gtp_cmd():
+    """Execute GTP command"""
+    try:
+        data = request.json
+        cmd = data.get('cmd', '').strip()
+        gtp = get_or_create_gtp()
+        
+        result = gtp.execute(cmd)
+        return jsonify({'success': True, 'data': {'result': result}})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
