@@ -252,6 +252,98 @@ class GoEngine {
         }
         return moves;
     }
+
+    /**
+     * Create a deep copy of the current board
+     * @returns {number[][]} Deep copy of the board
+     * @private
+     */
+    _deepCopyBoard() {
+        const copy = [];
+        for (let r = 0; r < this.boardSize; r++) {
+            copy.push([...this.board[r]]);
+        }
+        return copy;
+    }
+
+    /**
+     * Create a temporary GoEngine instance with a given board
+     * Used for checking liberties on a simulated board state
+     * @param {number[][]} board - The board to use for the temp engine
+     * @returns {GoEngine} A new GoEngine instance with the given board
+     * @private
+     */
+    _createEngineWithBoard(board) {
+        const tempEngine = new GoEngine(this.boardSize);
+        tempEngine.board = board;
+        return tempEngine;
+    }
+
+    /**
+     * Simulate a move without modifying the original board
+     * Returns the new board state, captured stones, and ko information
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @param {number} player - Player color (BLACK or WHITE)
+     * @returns {{newBoard: number[][], captured: number[][], koState: number[][]|null}}
+     *   newBoard: Deep copy of board with the move applied
+     *   captured: Array of [[r,c], ...] coordinates of captured stones
+     *   koState: The board state before this move (for ko detection), or null if no ko
+     */
+    simulateMove(row, col, player) {
+        // Step 1: Deep copy the board
+        const newBoard = this._deepCopyBoard();
+        const captured = [];
+        
+        // Store the original board state for ko detection
+        const previousBoard = this._deepCopyBoard();
+        
+        // Step 2: Place the stone
+        newBoard[row][col] = player;
+        
+        // Step 3: Check neighbors for opponent groups with 0 liberties and remove them
+        const opponent = player === GoEngine.BLACK ? GoEngine.WHITE : GoEngine.BLACK;
+        const tempEngine = this._createEngineWithBoard(newBoard);
+        
+        for (const [nr, nc] of this.getNeighbors(row, col)) {
+            if (newBoard[nr][nc] === opponent) {
+                const opponentGroup = tempEngine.getGroup(nr, nc);
+                if (tempEngine.countLiberties(opponentGroup).size === 0) {
+                    // Remove all stones in this group (they have 0 liberties)
+                    for (const [gr, gc] of opponentGroup) {
+                        captured.push([gr, gc]);
+                        newBoard[gr][gc] = GoEngine.EMPTY;
+                    }
+                    // Recreate temp engine since we modified newBoard
+                    tempEngine.board = newBoard;
+                }
+            }
+        }
+        
+        // Step 4: Check if the placed stone itself has 0 liberties (suicide edge case)
+        // In Go, suicide moves are typically not allowed, but we check for completeness
+        tempEngine.board = newBoard;
+        const placedGroup = tempEngine.getGroup(row, col);
+        if (tempEngine.countLiberties(placedGroup).size === 0) {
+            // This would be suicide - remove the placed stone
+            newBoard[row][col] = GoEngine.EMPTY;
+        }
+        
+        // Step 5: Ko detection
+        let koState = null;
+        // Ko occurs when exactly 1 stone was captured and the resulting board
+        // matches the previous board state (this.koState)
+        if (captured.length === 1 && this.koState !== null) {
+            // Check if newBoard matches this.koState
+            if (this._boardsEqual(newBoard, this.koState)) {
+                // This was a ko - return the board state before the move
+                koState = previousBoard;
+            }
+        }
+        
+        // Step 6: Return results
+        return { newBoard, captured, koState };
+    }
 }
 
 // Export to window for use in browser
