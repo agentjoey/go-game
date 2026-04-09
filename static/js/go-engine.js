@@ -75,6 +75,37 @@ class GoEngine {
     }
 
     /**
+     * Count the liberties for a group of stones
+     * @param {number[][]} group - Array of stone coordinates [[r,c], ...]
+     * @returns {Set<string>} Set of liberty coordinates as strings "row,col"
+     */
+    countLiberties(group) {
+        const liberties = new Set();
+        for (const [r, c] of group) {
+            for (const [nr, nc] of this.getNeighbors(r, c)) {
+                if (this.board[nr][nc] === GoEngine.EMPTY) {
+                    liberties.add(`${nr},${nc}`);
+                }
+            }
+        }
+        return liberties;
+    }
+
+    /**
+     * Get the count of liberties for a single stone's group
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @returns {number} Number of liberties, or 0 if position is EMPTY
+     */
+    getLiberties(row, col) {
+        if (this.board[row][col] === GoEngine.EMPTY) {
+            return 0;
+        }
+        const group = this.getGroup(row, col);
+        return this.countLiberties(group).size;
+    }
+
+    /**
      * Create an empty board filled with EMPTY
      * @returns {number[][]} 2D array representing the board
      * @private
