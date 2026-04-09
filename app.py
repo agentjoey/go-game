@@ -8,8 +8,18 @@ Flask Web 应用主文件
 from flask import Flask, render_template, jsonify, request, send_from_directory
 import os
 import json
+import sys
+import random
+import uuid
 
 app = Flask(__name__)
+
+# 导入GoGame类
+sys.path.insert(0, 'src')
+from go_game import GoGame
+
+# 存储活跃游戏字典
+games = {}
 
 # 加载死活题数据
 def load_tsumego_data():
@@ -156,6 +166,122 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('index.html'), 500
+
+# ==================== 游戏API路由 ====================
+
+def get_or_create_game(game_id):
+    """获取或创建游戏实例"""
+    if game_id not in games:
+        games[game_id] = GoGame()
+    return games[game_id]
+
+@app.route('/api/game/validate', methods=['POST'])
+def api_validate_move():
+    """验证移动是否合法（不实际落子）"""
+    try:
+        data = request.json
+        game_id = data.get('gameId', str(uuid.uuid4()))
+        row = data.get('row')
+        col = data.get('col')
+        
+        if row is None or col is None:
+            return jsonify({'success': False, 'error': '缺少row或col参数'}), 400
+        
+        game = get_or_create_game(game_id)
+        is_valid = game.is_valid_move(row, col)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'valid': is_valid,
+                'gameId': game_id,
+                'row': row,
+                'col': col,
+                'currentPlayer': game.current_player
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/game/move', methods=['POST'])
+def api_make_move():
+    """执行一步棋"""
+    try:
+        data = request.json
+        game_id = data.get('gameId', str(uuid.uuid4()))
+        row = data.get('row')
+        col = data.get('col')
+        
+        if row is None or col is None:
+            return jsonify({'success': False, 'error': '缺少row或col参数'}), 400
+        
+        game = get_or_create_game(game_id)
+        
+        if not game.is_valid_move(row, col):
+            return jsonify({'success': False, 'error': '非法移动'}), 400
+        
+        result = game.make_move(row, col)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'gameId': game_id,
+                'row': row,
+                'col': col,
+                'currentPlayer': game.current_player,
+                'captured': game.captured,
+                'moveHistory': game.move_history,
+                'result': result
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/game/valid-moves', methods=['GET'])
+def api_get_valid_moves():
+    """获取所有合法落子位置"""
+    try:
+        game_id = request.args.get('gameId', str(uuid.uuid4()))
+        game = get_or_create_game(game_id)
+        valid_moves = game.get_valid_moves()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'gameId': game_id,
+                'validMoves': valid_moves,
+                'currentPlayer': game.current_player,
+                'count': len(valid_moves)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/game/ai-move', methods=['GET'])
+def api_get_ai_move():
+    """获取AI推荐的落子位置（随机选择合法位置）"""
+    try:
+        game_id = request.args.get('gameId', str(uuid.uuid4()))
+        game = get_or_create_game(game_id)
+        valid_moves = game.get_valid_moves()
+        
+        if not valid_moves:
+            return jsonify({'success': False, 'error': '没有合法落子位置'}), 400
+        
+        # 随机选择一个合法位置作为AI推荐
+        ai_row, ai_col = random.choice(valid_moves)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'gameId': game_id,
+                'aiMove': {'row': ai_row, 'col': ai_col},
+                'currentPlayer': game.current_player,
+                'validMovesCount': len(valid_moves)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     import socket
