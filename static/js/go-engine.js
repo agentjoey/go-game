@@ -21,6 +21,60 @@ class GoEngine {
     }
 
     /**
+     * Get all valid neighbor coordinates for a given position
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @returns {number[][]} Array of valid neighbor coordinates [[r,c], ...]
+     */
+    getNeighbors(row, col) {
+        const neighbors = [];
+        for (const [dr, dc] of this.constructor.DIRECTIONS) {
+            const newRow = row + dr;
+            const newCol = col + dc;
+            if (newRow >= 0 && newRow < this.boardSize && newCol >= 0 && newCol < this.boardSize) {
+                neighbors.push([newRow, newCol]);
+            }
+        }
+        return neighbors;
+    }
+
+    /**
+     * Get all stones in the same group as the stone at the given position
+     * Uses BFS/flood-fill algorithm
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @returns {number[][]} Array of stone coordinates in the group [[r,c], ...]
+     */
+    getGroup(row, col) {
+        const color = this.board[row][col];
+        if (color === GoEngine.EMPTY) {
+            return [];
+        }
+
+        const group = [];
+        const visited = new Set();
+        const queue = [[row, col]];
+        const key = (r, c) => `${r},${c}`;
+
+        visited.add(key(row, col));
+
+        while (queue.length > 0) {
+            const [r, c] = queue.shift();
+            group.push([r, c]);
+
+            for (const [nr, nc] of this.getNeighbors(r, c)) {
+                const neighborKey = key(nr, nc);
+                if (!visited.has(neighborKey) && this.board[nr][nc] === color) {
+                    visited.add(neighborKey);
+                    queue.push([nr, nc]);
+                }
+            }
+        }
+
+        return group;
+    }
+
+    /**
      * Create an empty board filled with EMPTY
      * @returns {number[][]} 2D array representing the board
      * @private
