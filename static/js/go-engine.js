@@ -235,6 +235,23 @@ class GoEngine {
 
         return { valid: true, reason: '' };
     }
+
+    /**
+     * Get all valid moves for a player
+     * @param {number} player - Player color (BLACK or WHITE)
+     * @returns {Array} Array of valid move coordinates [[row, col], ...]
+     */
+    getValidMoves(player) {
+        const moves = [];
+        for (let row = 0; row < this.boardSize; row++) {
+            for (let col = 0; col < this.boardSize; col++) {
+                if (this.isValidMove(row, col, player, this.koState).valid) {
+                    moves.push([row, col]);
+                }
+            }
+        }
+        return moves;
+    }
 }
 
 // Export to window for use in browser
