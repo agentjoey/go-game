@@ -16,17 +16,17 @@
         <!-- 左侧：棋盘 -->
         <div class="board-section">
             <div class="board-info">
-                <span>当前回合：<strong id="current-player">黑方</strong></span>
-                <span>黑方提子：<span id="black-captures">0</span></span>
-                <span>白方提子：<span id="white-captures">0</span></span>
+                <span>当前回合：<strong id="currentTurn">黑方</strong></span>
+                <span>黑方提子：<span id="blackCaptures">0</span></span>
+                <span>白方提子：<span id="whiteCaptures">0</span></span>
             </div>
-            <div class="board-wrapper">
+            <div class="board-wrapper" id="boardWrapper">
                 <div id="go-board" class="go-board"></div>
             </div>
             <div class="board-controls">
-                <button class="btn-action btn-undo" onclick="undoMove()">悔棋</button>
-                <button class="btn-action btn-pass" onclick="passMove()">应手</button>
-                <button class="btn-action btn-resign" onclick="resignGame()">认输</button>
+                <button class="btn-action btn-undo" id="btnUndo">悔棋</button>
+                <button class="btn-action btn-pass" id="btnPass">应手</button>
+                <button class="btn-action btn-resign" id="btnResign">认输</button>
             </div>
         </div>
 
@@ -38,8 +38,8 @@
                     <span class="panel-title">阿呆</span>
                 </div>
                 <div class="panel-body">
-                    <p class="ai-status">状态：<span id="ai-status">空闲</span></p>
-                    <button class="btn-new-game" onclick="newGame()">开始新游戏</button>
+                    <p class="ai-status">状态：<span id="aiStatus">空闲</span></p>
+                    <button class="btn-new-game" id="btnNewGame">开始新游戏</button>
                 </div>
             </div>
             <div class="panel settings-panel">
@@ -47,17 +47,46 @@
                     <span class="panel-title">⚙️ 设置</span>
                 </div>
                 <div class="panel-body">
-                    <p>棋盘大小：<select id="board-size"><option value="9">9路</option><option value="13">13路</option><option value="19" selected>19路</option></select></p>
+                    <p>棋盘大小：
+                        <select id="boardSize">
+                            <option value="9">9路</option>
+                            <option value="13">13路</option>
+                            <option value="19" selected>19路</option>
+                        </select>
+                    </p>
+                    <p>AI难度：
+                        <select id="aiDifficulty">
+                            <option value="easy">简单</option>
+                            <option value="medium" selected>中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </p>
+                    <p>
+                        <label>
+                            <input type="checkbox" id="aiEnabled" checked>
+                            启用 AI 对手
+                        </label>
+                    </p>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- 费曼模式 Banner (隐藏) -->
+    <div id="feynmanBanner" class="feynman-banner" style="display:none;">
+        <span id="feynmanText">费曼模式</span>
+        <span id="feynmanTimer"></span>
+    </div>
 
     <script src="/static/js/go-board.js"></script>
     <script src="/static/js/go-game.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             window.game = new GoGame();
+            
+            document.getElementById('btnNewGame')?.addEventListener('click', () => {
+                window.game.resetGame();
+            });
         });
     </script>
 </body>

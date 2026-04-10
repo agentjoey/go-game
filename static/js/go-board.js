@@ -14,6 +14,11 @@ class GoBoard {
         this.animatingCells = [];
         this.showMoveNumbers = true;
         this.moveNumbers = [];
+        this.highlightCells = [];
+        this.questionMark = null;
+        this.markingMode = false;
+        this.correctMarkPos = null;
+        this.socraticFocus = null;
         
         for (let i = 0; i < size; i++) {
             this.board.push(new Array(size).fill(0));
@@ -76,8 +81,8 @@ class GoBoard {
                 if (this.board[r][c] !== 0) {
                     const cx = (c + 0.5) * cellSize;
                     const cy = (r + 0.5) * cellSize;
-                    // 棋子颜色: 1=白棋(浅色), 2=黑棋(深色) — 交换渲染逻辑
-                    const isBlack = this.board[r][c] === 2;
+                    // 棋子颜色: 1=黑棋, 2=白棋
+                    const isBlack = this.board[r][c] === 1;
                     const isAnimating = this.animatingCells.some(a => a.row === r && a.col === c);
                     const animClass = isAnimating ? 'piece-drop' : '';
                     
@@ -85,11 +90,11 @@ class GoBoard {
                     svgContent += `<circle cx="${cx+0.6}" cy="${cy+0.6}" r="${cellSize*0.4}" fill="rgba(0,0,0,0.2)"/>`;
                     
                     if (isBlack) {
-                        // 黑棋 = 2 (用深色表示)
+                        // 黑棋 = 1 (用深色表示)
                         svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#2d2d2d" stroke="#1a1a1a" stroke-width="0.3" class="${animClass}"/>`;
                         svgContent += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.15}" ry="${cellSize*0.08}" fill="rgba(255,255,255,0.15)"/>`;
-                    } else if (this.board[r][c] === 1) {
-                        // 白棋 = 1 (用浅色表示)
+                    } else if (this.board[r][c] === 2) {
+                        // 白棋 = 2 (用浅色表示)
                         svgContent += `<circle cx="${cx}" cy="${cy}" r="${cellSize*0.4}" fill="#faf8f5" stroke="#d0cdc5" stroke-width="0.3" class="${animClass}"/>`;
                         svgContent += `<ellipse cx="${cx-cellSize*0.1}" cy="${cy-cellSize*0.12}" rx="${cellSize*0.12}" ry="${cellSize*0.06}" fill="rgba(255,255,255,0.6)"/>`;
                     } else if (this.board[r][c] === 3) {
