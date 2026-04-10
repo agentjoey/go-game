@@ -64,44 +64,45 @@ class MCTSEngine:
         self.c_param = 1.41  # UCB1 exploration constant
 
     def _get_untried_moves(self, board: List[List[int]], player: int, ko_state) -> List[Tuple[int, int]]:
-        """获取所有未尝试的合法走法"""
-        temp_core = GoEngineCore(len(board))
-        temp_core.board = [row[:] for row in board]
-        temp_core.ko_state = [row[:] for row in ko_state] if ko_state else None
-        return temp_core.get_valid_moves(player)
+        """获取所有未尝试的合法走法（复用 core 实例）"""
+        self.core.board = [row[:] for row in board]
+        self.core.ko_state = [row[:] for row in ko_state] if ko_state else None
+        return self.core.get_valid_moves(player)
 
     def _simulate(self, board: List[List[int]], player: int, ko_state) -> int:
         """随机模拟到终局，返回胜者 (BLACK=1, WHITE=2)"""
-        sim_core = GoEngineCore(len(board))
-        sim_core.board = [row[:] for row in board]
-        sim_core.ko_state = [row[:] for row in ko_state] if ko_state else None
+        sim_board = [row[:] for row in board]
+        sim_ko = [row[:] for row in ko_state] if ko_state else None
+        board_size = len(board)
 
         current_player = player
         passes = 0
-        max_moves = len(board) * len(board) * 2
+        max_moves = board_size * board_size * 2
 
         for _ in range(max_moves):
-            moves = sim_core.get_valid_moves(current_player)
-            if not moves:
-                # Pass
-                other = WHITE if current_player == BLACK else BLACK
-                if passes >= 1:
-                    # 连续pass，终局
-                    break
-                passes += 1
-                current_player = other
-                continue
+            # 快速获取空位（MCTS 随机模拟用 fast 版本，跳过复杂验证）
+            empty_spots = []
+            for r in range(board_size):
+                for c in range(board_size):
+                    if sim_board[r][c] == EMPTY:
+                        empty_spots.append((r, c))
+
+            if not empty_spots:
+                # 连续 pass，终局
+                break
 
             # 随机选择一个走法
-            move = random.choice(moves)
-            new_board, captured, new_ko = sim_core.simulate_move(move[0], move[1], current_player)
-            sim_core.board = new_board
-            sim_core.ko_state = new_ko
+            move = random.choice(empty_spots)
+            new_board, captured, new_ko = self.core.simulate_move(move[0], move[1], current_player)
+            sim_board = new_board
+            sim_ko = new_ko
             passes = 0
             current_player = WHITE if current_player == BLACK else BLACK
 
         # 计分
-        result = sim_core.score(6.5)
+        self.core.board = sim_board
+        self.core.ko_state = sim_ko
+        result = self.core.score(6.5)
         return 1 if result["winner"] == "black" else 2
 
     def _backpropagate(self, node: MCTSNode, winner: int):

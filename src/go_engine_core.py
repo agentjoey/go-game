@@ -125,6 +125,15 @@ class GoEngineCore:
                     moves.append((r, c))
         return moves
 
+    def get_valid_moves_fast(self, player: int) -> List[Tuple[int, int]]:
+        """快速获取合法走法（跳过 ko/suicide 检测，用于 MCTS 模拟）"""
+        moves = []
+        for r in range(self.board_size):
+            for c in range(self.board_size):
+                if self.board[r][c] == EMPTY:
+                    moves.append((r, c))
+        return moves
+
     def simulate_move(self, row: int, col: int, player: int) -> Tuple[List[List[int]], List[Tuple[int, int]], Optional[List[List[int]]]]:
         """模拟落子，返回（新棋盘，被提子，ko状态）"""
         new_board = [row[:] for row in self.board]

@@ -272,6 +272,23 @@ def api_kb_dialogue():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/kb/learning-path')
+def api_kb_learning_path():
+    """Get learning path for a level"""
+    try:
+        level = request.args.get('level', type=int, default=1)
+        kb = get_kb()
+        path = kb.get_learning_path(level)
+        return jsonify({
+            'success': True,
+            'data': {
+                'path': [p.to_dict() for p in path],
+                'count': len(path)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/kb/teach', methods=['POST'])
 def api_kb_teach():
     """Get AI teaching response based on game state"""
