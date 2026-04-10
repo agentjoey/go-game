@@ -203,9 +203,14 @@ class GoGame {
 
         try {
             const response = await fetch('/api/game/ai-move?difficulty=' + this.difficulty);
-            const move = await response.json();
-            if (move && move.row !== undefined && move.col !== undefined) {
-                this.handleMove(move.row, move.col);
+            const json = await response.json();
+            const aiMove = json?.data?.aiMove;
+            if (aiMove && aiMove.row !== undefined && aiMove.col !== undefined) {
+                this.handleMove(aiMove.row, aiMove.col);
+            } else {
+                // Fallback to random valid move
+                const fallback = this.getBasicAIMove();
+                if (fallback) this.handleMove(fallback.row, fallback.col);
             }
         } catch (err) {
             console.error('AI move failed:', err);
