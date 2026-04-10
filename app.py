@@ -27,7 +27,7 @@ from kb_teaching import TeachingEngine
 from kb_assessment import AssessmentEngine
 
 # Knowledge Base Engine global instances
-KB_PATH = "/Users/xtation/Library/Mobile Documents/iCloud~md~obsidian/Documents/Brain#2/10_Projects/P020-Go-Learning/04_Knowledge_Base/"
+KB_PATH = os.path.join(os.path.dirname(__file__), "data", "kb")
 kb_instance = None
 teaching_instance = None
 assessment_instance = None
